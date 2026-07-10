@@ -11,55 +11,81 @@
     >
 
     <LinearLayout
-        android:layout_marginTop="20dp"
+        android:id="@+id/linearLayout2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         android:orientation="horizontal"
         app:layout_constraintEnd_toStartOf="@+id/space2"
         app:layout_constraintStart_toEndOf="@+id/space"
         app:layout_constraintTop_toTopOf="parent">
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Apps"
                 android:textColor="@color/white"
                 android:textSize="30sp" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="X apps - tap to configure"/>
+                android:text="X apps - tap to configure" />
         </LinearLayout>
+
         <Space
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
+
         <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
             app:cardBackgroundColor="#8EC426"
-            app:cardCornerRadius="10dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            app:cardCornerRadius="10dp">
+
             <LinearLayout
-                android:padding="10dp"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                >
+                android:padding="10dp">
+
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/add_icon"/>
+                    android:layout_gravity="center"
+                    app:srcCompat="@drawable/add_icon" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Add App"/>
+                    android:layout_gravity="center"
+                    android:text="Add App" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
     </LinearLayout>
 
+    <ScrollView
+        android:layout_marginTop="20dp"
+        android:layout_width="0dp"
+        android:layout_height="600dp"
+        app:layout_constraintEnd_toStartOf="@+id/space2"
+        app:layout_constraintStart_toEndOf="@+id/space"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout2">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <include layout="@layout/app_card"/>
+        </LinearLayout>
+    </ScrollView>
 
 
     <include layout="@layout/navigation_panel"/>
