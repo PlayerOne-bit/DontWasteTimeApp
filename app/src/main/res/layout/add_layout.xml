@@ -7,8 +7,7 @@
     android:id="@+id/add_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0B0B0B"
-    tools:context=".MainActivity">
+    android:background="#0B0B0B">
 
     <!-- Header -->
     <LinearLayout
@@ -224,13 +223,8 @@
                     android:text="Toggle to force block, regardless of time used" />
             </LinearLayout>
 
-            <!-- Three-way style toggle: Active / Auto / Blocked -->
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/blockOverrideSwitch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:thumbTint="#8EC426"
-                android:trackTint="#3B3B3B" />
+            <!--TODO:
+            go make switch-->
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>
