@@ -2,10 +2,14 @@ package app.dontwastetimeapp.database;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import androidx.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import app.dontwastetimeapp.classes.AppInfo;
 
@@ -39,14 +43,78 @@ public class AppPreferences extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS "+TABLE_APP_INFO);
         onCreate(db);
     }
-    public void addApp(AppInfo app){
-        SQLiteDatabase db = this.getWritableDatabase();
+    public AppInfo getApp(int id){
+        AppInfo app=null;
+        try(
+            SQLiteDatabase db = this.getReadableDatabase()){
+            try(Cursor cursor = db.query(TABLE_APP_INFO,null,"id=?",new String[]{String.valueOf(id)},null,null,null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    String packageName=cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PACKAGE_NAME));
+                    String appName=cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_APP_NAME));
+                    int dailyLimitMinutes = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_DAILY_LIMIT_MINUTES));
+                    int minutesUsedToday = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_MINUTES_USED_TODAY));
+                    int block = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_BLOCKED));
+                    boolean isBlocked = (block==1);
+                    app=new AppInfo(id,packageName,appName, dailyLimitMinutes);
+                    app.setMinutesUsedToday(minutesUsedToday);
+                    app.setBlocked(isBlocked);
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return app;
+    }
+    public List<AppInfo> getAllApps() {
+        List<AppInfo> appList = new ArrayList<>();
+        try (SQLiteDatabase db = this.getReadableDatabase()) {
+            try (Cursor cursor = db.query(TABLE_APP_INFO, null, null, null, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    do {
+                        int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                        String packageName = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PACKAGE_NAME));
+                        String appName = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_APP_NAME));
+                        int dailyLimitMinutes = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_DAILY_LIMIT_MINUTES));
+                        int minutesUsedToday = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_MINUTES_USED_TODAY));
+                        int block = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_BLOCKED));
+
+                        AppInfo app = new AppInfo(id, packageName, appName, dailyLimitMinutes);
+                        app.setMinutesUsedToday(minutesUsedToday);
+                        app.setBlocked(block == 1);
+
+                        appList.add(app);
+                    } while (cursor.moveToNext());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return appList;
+    }
+
+    public boolean addApp(AppInfo app){
+        long result=0;
+        try(SQLiteDatabase db = this.getWritableDatabase()) {
+            ContentValues values = getValues(app);
+            result = db.insert(TABLE_APP_INFO, null, values);
+        }
+        return result != -1;
+    }
+
+    public boolean removeApp(int id){
+        int result=0;
+        try(SQLiteDatabase db=this.getWritableDatabase()) {
+            result = db.delete(TABLE_APP_INFO, "id=?", new String[]{String.valueOf(id)});
+        }
+        return result>0;
+    }
+    public ContentValues getValues(AppInfo app){
         ContentValues values = new ContentValues();
         values.put(COLUMN_PACKAGE_NAME,app.getPackageName());
         values.put(COLUMN_APP_NAME,app.getAppName());
         values.put(COLUMN_DAILY_LIMIT_MINUTES,app.getDailyLimitMinutes());
         values.put(COLUMN_MINUTES_USED_TODAY,app.getMinutesUsedToday());
         values.put(COLUMN_BLOCKED,app.isBlocked());
+        return values;
     }
-
 }
