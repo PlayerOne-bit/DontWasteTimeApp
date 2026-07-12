@@ -222,9 +222,13 @@
                     android:layout_height="wrap_content"
                     android:text="Toggle to force block, regardless of time used" />
             </LinearLayout>
-
-            <!--TODO:
-            go make switch-->
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/blockOverrideSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:thumbTint="@color/switch_thumb_color"
+                android:trackTint="@color/switch_track_color" />
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>

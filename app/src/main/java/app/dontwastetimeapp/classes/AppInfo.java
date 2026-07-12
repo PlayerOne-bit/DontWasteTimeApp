@@ -1,13 +1,20 @@
 package app.dontwastetimeapp.classes;
 
 public class AppInfo {
-    private int id;
-    private String packageName;
-    private String appName;
+    private final int id;
+    private final String packageName;
+    private final String appName;
     private int dailyLimitMinutes;
     private int minutesUsedToday;
     private boolean blocked;
-
+    public AppInfo(String packageName, String appName, int dailyLimitMinutes) {
+        this.id=0;
+        this.packageName = packageName;
+        this.appName = appName;
+        this.dailyLimitMinutes = dailyLimitMinutes;
+        this.minutesUsedToday = 0;
+        this.blocked = false;
+    }
     public AppInfo(int id, String packageName, String appName, int dailyLimitMinutes) {
         this.id=id;
         this.packageName = packageName;
