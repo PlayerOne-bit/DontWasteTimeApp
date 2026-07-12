@@ -64,10 +64,10 @@ public class AppPreferences extends SQLiteOpenHelper {
         }
         return app;
     }
-    public List<AppInfo> getAllApps() {
+    public List<AppInfo> searchApps(String search){
         List<AppInfo> appList = new ArrayList<>();
         try (SQLiteDatabase db = this.getReadableDatabase()) {
-            try (Cursor cursor = db.query(TABLE_APP_INFO, null, null, null, null, null, null)) {
+            try (Cursor cursor = db.query(TABLE_APP_INFO, null, COLUMN_APP_NAME+"LIKE ?", new String[]{"%"+search+"%"}, null, null, COLUMN_APP_NAME+" ASC")) {
                 if (cursor != null && cursor.moveToFirst()) {
                     do {
                         int id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID));
@@ -90,7 +90,32 @@ public class AppPreferences extends SQLiteOpenHelper {
         }
         return appList;
     }
+    public List<AppInfo> getAllApps() {
+        List<AppInfo> appList = new ArrayList<>();
+        try (SQLiteDatabase db = this.getReadableDatabase()) {
+            try (Cursor cursor = db.query(TABLE_APP_INFO, null, null, null, null, null, COLUMN_APP_NAME+" ASC")) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    do {
+                        int id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID));
+                        String packageName = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PACKAGE_NAME));
+                        String appName = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_APP_NAME));
+                        int dailyLimitMinutes = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_DAILY_LIMIT_MINUTES));
+                        int minutesUsedToday = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_MINUTES_USED_TODAY));
+                        int block = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_BLOCKED));
 
+                        AppInfo app = new AppInfo(id, packageName, appName, dailyLimitMinutes);
+                        app.setMinutesUsedToday(minutesUsedToday);
+                        app.setBlocked(block == 1);
+
+                        appList.add(app);
+                    } while (cursor.moveToNext());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return appList;
+    }
     public boolean addApp(AppInfo app){
         long result=0;
         try(SQLiteDatabase db = this.getWritableDatabase()) {

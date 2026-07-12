@@ -107,7 +107,21 @@
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>
-
+    <EditText
+        android:id="@+id/searchInstalledApps"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:hint="Search your installed apps"
+        android:textColorHint="#66676E"
+        android:textColor="@color/white"
+        android:padding="12dp"
+        android:background="#141414"
+        android:inputType="text"
+        android:maxLines="1"
+        app:layout_constraintEnd_toStartOf="@+id/space2"
+        app:layout_constraintStart_toEndOf="@+id/space"
+        app:layout_constraintTop_toBottomOf="@+id/cardViewPicker" />
     <!-- Installed apps list (shown when picker is open) -->
     <ScrollView
         android:id="@+id/appPickerScroll"
@@ -117,17 +131,13 @@
         android:visibility="gone"
         app:layout_constraintEnd_toStartOf="@+id/space2"
         app:layout_constraintStart_toEndOf="@+id/space"
-        app:layout_constraintTop_toBottomOf="@+id/cardViewPicker">
+        app:layout_constraintTop_toBottomOf="@+id/searchInstalledApps">
 
         <LinearLayout
             android:id="@+id/installedAppsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-
-            <include layout="@layout/app_card" />
-            <include layout="@layout/app_card" />
-            <include layout="@layout/app_card" />
 
         </LinearLayout>
     </ScrollView>
