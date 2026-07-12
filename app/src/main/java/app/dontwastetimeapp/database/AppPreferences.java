@@ -45,17 +45,16 @@ public class AppPreferences extends SQLiteOpenHelper {
     }
     public AppInfo getApp(int id){
         AppInfo app=null;
-        try(
-            SQLiteDatabase db = this.getReadableDatabase()){
-            try(Cursor cursor = db.query(TABLE_APP_INFO,null,"id=?",new String[]{String.valueOf(id)},null,null,null)) {
+        try(SQLiteDatabase db = this.getReadableDatabase()) {
+            try (Cursor cursor = db.query(TABLE_APP_INFO, null, COLUMN_ID + "=?", new String[]{String.valueOf(id)}, null, null, null)) {
                 if (cursor != null && cursor.moveToFirst()) {
-                    String packageName=cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PACKAGE_NAME));
-                    String appName=cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_APP_NAME));
+                    String packageName = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PACKAGE_NAME));
+                    String appName = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_APP_NAME));
                     int dailyLimitMinutes = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_DAILY_LIMIT_MINUTES));
                     int minutesUsedToday = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_MINUTES_USED_TODAY));
                     int block = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_BLOCKED));
-                    boolean isBlocked = (block==1);
-                    app=new AppInfo(id,packageName,appName, dailyLimitMinutes);
+                    boolean isBlocked = (block == 1);
+                    app = new AppInfo(id, packageName, appName, dailyLimitMinutes);
                     app.setMinutesUsedToday(minutesUsedToday);
                     app.setBlocked(isBlocked);
                 }
@@ -71,7 +70,7 @@ public class AppPreferences extends SQLiteOpenHelper {
             try (Cursor cursor = db.query(TABLE_APP_INFO, null, null, null, null, null, null)) {
                 if (cursor != null && cursor.moveToFirst()) {
                     do {
-                        int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                        int id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID));
                         String packageName = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PACKAGE_NAME));
                         String appName = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_APP_NAME));
                         int dailyLimitMinutes = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_DAILY_LIMIT_MINUTES));
@@ -100,11 +99,18 @@ public class AppPreferences extends SQLiteOpenHelper {
         }
         return result != -1;
     }
-
+    public boolean editApp(AppInfo app){
+        int result=0;
+        try(SQLiteDatabase db = this.getWritableDatabase()) {
+            ContentValues values = getValues(app);
+            result = db.update(TABLE_APP_INFO, values, COLUMN_ID + "=?", new String[]{String.valueOf(app.getId())});
+        }
+        return result >0;
+    }
     public boolean removeApp(int id){
         int result=0;
         try(SQLiteDatabase db=this.getWritableDatabase()) {
-            result = db.delete(TABLE_APP_INFO, "id=?", new String[]{String.valueOf(id)});
+            result = db.delete(TABLE_APP_INFO, COLUMN_ID + "=?", new String[]{String.valueOf(id)});
         }
         return result>0;
     }

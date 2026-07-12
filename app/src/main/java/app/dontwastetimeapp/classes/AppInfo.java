@@ -16,6 +16,7 @@ public class AppInfo {
         this.minutesUsedToday = 0;
         this.blocked = false;
     }
+    public int getId(){return id;}
     public String getPackageName() {
         return packageName;
     }

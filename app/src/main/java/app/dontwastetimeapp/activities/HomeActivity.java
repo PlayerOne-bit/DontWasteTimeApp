@@ -1,6 +1,10 @@
 package app.dontwastetimeapp.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.view.ViewStub;
+import android.widget.LinearLayout;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,5 +26,19 @@ public class HomeActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        setUpNavigation();
+    }
+    private void setUpNavigation(){
+        LinearLayout navApps = findViewById(R.id.navApps),
+                    navFocus = findViewById(R.id.navFocus);
+        navApps.setOnClickListener(v-> toNavigate(AppActivity.class));
+        navFocus.setOnClickListener(v-> toNavigate(FocusActivity.class));
+    }
+    private void toNavigate(Class<?> destination){
+        Intent intent = new Intent(HomeActivity.this,destination);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
+        finish();
+        overridePendingTransition(0,0);
     }
 }
