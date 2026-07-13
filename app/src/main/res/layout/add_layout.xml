@@ -119,6 +119,7 @@
         android:background="#141414"
         android:inputType="text"
         android:maxLines="1"
+        android:visibility="gone"
         app:layout_constraintEnd_toStartOf="@+id/space2"
         app:layout_constraintStart_toEndOf="@+id/space"
         app:layout_constraintTop_toBottomOf="@+id/cardViewPicker" />

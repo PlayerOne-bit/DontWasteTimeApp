@@ -1,6 +1,5 @@
 package app.dontwastetimeapp.activities;
 
-import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -59,9 +58,10 @@ public class AddAppActivity extends AppCompatActivity {
 
     private void setUpAddAppButton(){
         LinearLayout selectedAppRow = findViewById(R.id.selectedAppRow);
-        selectedAppRow.setOnClickListener(v ->
-                findViewById(R.id.appPickerScroll).setVisibility(View.VISIBLE)
-        );
+        selectedAppRow.setOnClickListener(v -> {
+            findViewById(R.id.searchInstalledApps).setVisibility(View.VISIBLE);
+            findViewById(R.id.appPickerScroll).setVisibility(View.VISIBLE);
+        });
 
         loadInstalledApps();
     }
@@ -152,6 +152,7 @@ public class AddAppActivity extends AppCompatActivity {
         selectedIcon.setImageDrawable(pm.getApplicationIcon(appInfo));
         selectedName.setText(pm.getApplicationLabel(appInfo));
 
+        findViewById(R.id.searchInstalledApps).setVisibility(View.GONE);
         findViewById(R.id.appPickerScroll).setVisibility(View.GONE);
     }
 
