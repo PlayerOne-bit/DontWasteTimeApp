@@ -5,6 +5,8 @@ import static android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
@@ -64,21 +66,17 @@ public class AppActivity extends AppCompatActivity {
     private void displayAllApps(List<AppInfo> apps){
         LinearLayout savedAppsContainer = findViewById(R.id.savedAppsContainer);
         savedAppsContainer.removeAllViews();
-        for(AppInfo app: apps){
-            View row = getLayoutInflater().inflate(R.layout.app_card,savedAppsContainer,false);
+        for(AppInfo app: apps) {
+            View row = getLayoutInflater().inflate(R.layout.app_card, savedAppsContainer, false);
             ImageView appIcon = row.findViewById(R.id.appIcon);
             TextView appName = row.findViewById(R.id.appName);
             TextView appDailyMinutesUsedToday = findViewById(R.id.appDailyMinutesUsedToday);
             ProgressBar appProgressBar = row.findViewById(R.id.appProgressBar);
 
             appName.setText(app.getAppName());
-            updateTimeLimitLabel(appDailyMinutesUsedToday,app.getMinutesUsedToday());
-            bindAppIcon(appIcon,app.getPackageName());
+            updateTimeLimitLabel(appDailyMinutesUsedToday,appProgressBar, app);
+            bindAppIcon(appIcon, app.getPackageName());
 
-            if (app.getDailyLimitMinutes() > 0) {
-                int percentUsed = (int) ((app.getMinutesUsedToday() / (float) app.getDailyLimitMinutes()) * 100);
-                appProgressBar.setProgress(Math.min(percentUsed, 100));
-            }//TODO: add red progress bar to 100% which depicts BLOCKED
             row.setOnClickListener(v->openEditScreen(app));
             savedAppsContainer.addView(row);
         }
@@ -130,15 +128,35 @@ public class AppActivity extends AppCompatActivity {
             }
         });
     }
-    private void updateTimeLimitLabel(TextView label, int totalMinutes) {
-        int hours = totalMinutes / 60;
-        int minutes = totalMinutes % 60;
+    private void updateTimeLimitLabel(TextView label,ProgressBar bar,AppInfo app) {
+        String text="";
 
-        if (hours == 0) {
-            label.setText(String.format("%dm", minutes));
-        } else {
-            label.setText(String.format("%dh %02dm", hours, minutes));
+        int[] colors={
+                Color.parseColor("#D9181B"),
+                Color.parseColor("#FF8200"),
+                Color.parseColor("#B8FF2F")
+        };
+        if(app.isBlocked()) {
+            text="BLOCKED";
+            bar.setProgress(bar.getMax());
+            bar.setProgressTintList(ColorStateList.valueOf(colors[1]));
+        }else if (app.getDailyLimitMinutes()>0){
+            int totalMinutes = app.getMinutesUsedToday();
+            int hours = totalMinutes / 60;
+            String minutesUsedToday = ((hours>0)?(hours+"h "):"") + (totalMinutes % 60+"m");
+            int maxTotalMinutes = app.getDailyLimitMinutes();
+            int maxHours = maxTotalMinutes / 60;
+            String dailyLimitMinutes =((maxHours>0)?(maxHours+"h "):"") + (maxTotalMinutes % 60 +"m");
+            text = String.format("%s / %s",minutesUsedToday,dailyLimitMinutes);
+
+            int percentUsed = (int) ((app.getMinutesUsedToday() / (float) app.getDailyLimitMinutes()) * 100);
+            bar.setProgress(Math.min(percentUsed, 100));
+            bar.setProgressTintList(ColorStateList.valueOf(colors[2]));
+        }else{
+            text="TIME OUT";
+            bar.setProgressTintList(ColorStateList.valueOf(colors[0]));
         }
+        label.setText(text);
     }
     private void setUpNavigation(){
         LinearLayout navHome = findViewById(R.id.navHome),
