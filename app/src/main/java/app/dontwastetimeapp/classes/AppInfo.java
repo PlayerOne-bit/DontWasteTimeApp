@@ -7,6 +7,7 @@ public class AppInfo {
     private int dailyLimitMinutes;
     private int minutesUsedToday;
     private boolean blocked;
+    private boolean timeOut;
     public AppInfo(String packageName, String appName, int dailyLimitMinutes) {
         this.id=0;
         this.packageName = packageName;
@@ -14,6 +15,7 @@ public class AppInfo {
         this.dailyLimitMinutes = dailyLimitMinutes;
         this.minutesUsedToday = 0;
         this.blocked = false;
+        this.timeOut = false;
     }
     public AppInfo(int id, String packageName, String appName, int dailyLimitMinutes) {
         this.id=id;
@@ -22,6 +24,7 @@ public class AppInfo {
         this.dailyLimitMinutes = dailyLimitMinutes;
         this.minutesUsedToday = 0;
         this.blocked = false;
+        this.timeOut = false;
     }
     public int getId(){return id;}
     public String getPackageName() {
@@ -43,7 +46,7 @@ public class AppInfo {
     public boolean isBlocked() {
         return blocked;
     }
-
+    public boolean isTimeOut(){return timeOut; }
     public void setDailyLimitMinutes(int dailyLimitMinutes) {
         this.dailyLimitMinutes = dailyLimitMinutes;
     }
@@ -55,6 +58,7 @@ public class AppInfo {
     public void setBlocked(boolean blocked) {
         this.blocked = blocked;
     }
+    public void setTimeOut(boolean timeOut){this.timeOut = timeOut;}
 
     public boolean isOverLimit() {
         return minutesUsedToday >= dailyLimitMinutes;

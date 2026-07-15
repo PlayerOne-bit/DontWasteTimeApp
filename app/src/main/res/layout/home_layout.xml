@@ -142,6 +142,17 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
+    <TextView
+        android:id="@+id/hintTopApps"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:text="No saved applications were being used"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="@+id/linearLayout"
+        app:layout_constraintEnd_toStartOf="@+id/space2"
+        app:layout_constraintStart_toEndOf="@+id/space"
+        app:layout_constraintTop_toBottomOf="@+id/cardView2" />
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="0dp"
@@ -166,22 +177,10 @@
             android:layout_height="wrap_content">
 
             <LinearLayout
-
+                android:id="@+id/topSavedAppsContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
-
-                <include layout="@layout/app_card" />
-
-                <include layout="@layout/app_card" />
-
-                <include layout="@layout/app_card" />
-
-                <include layout="@layout/app_card" />
-
-                <include layout="@layout/app_card" />
-
-                <include layout="@layout/app_card" />
             </LinearLayout>
         </ScrollView>
     </LinearLayout>

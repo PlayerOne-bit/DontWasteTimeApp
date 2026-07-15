@@ -205,11 +205,8 @@ public class AddAppActivity extends AppCompatActivity {
         SeekBar timeLimitSeekBar = findViewById(R.id.timeLimitSeekBar);
         int dailyLimitMinutes = Math.round(timeLimitSeekBar.getProgress() / 5f) * 5;
 
-        SwitchCompat blockOverrideSwitch = findViewById(R.id.blockOverrideSwitch);
-        boolean blocked = blockOverrideSwitch.isChecked();
 
         AppInfo newApp = new AppInfo(packageName, appName, dailyLimitMinutes);
-        newApp.setBlocked(blocked);
 
         AppPreferences db = new AppPreferences(this);
         boolean success = db.addApp(newApp);

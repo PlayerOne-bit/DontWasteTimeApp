@@ -23,6 +23,7 @@ public class AppPreferences extends SQLiteOpenHelper {
     private static final String COLUMN_DAILY_LIMIT_MINUTES="daily_limit_minutes";
     private static final String COLUMN_MINUTES_USED_TODAY="minutes_used_today";
     private static final String COLUMN_BLOCKED="blocked";
+    private static final String COLUMN_TIME_OUT="time_out";
     public AppPreferences(@Nullable Context context) {
         super(context, NAME, null, VERSION);
     }
@@ -30,12 +31,13 @@ public class AppPreferences extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE "+TABLE_APP_INFO+"("+
-                COLUMN_ID+" INT PRIMARY KEY AUTOINCREMENT UNIQUE,"+
+                COLUMN_ID+" INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,"+
                 COLUMN_PACKAGE_NAME+" TEXT," +
                 COLUMN_APP_NAME+" TEXT,"+
-                COLUMN_DAILY_LIMIT_MINUTES+" INT,"+
-                COLUMN_MINUTES_USED_TODAY+" INT,"+
-                COLUMN_BLOCKED+" BOOL"+
+                COLUMN_DAILY_LIMIT_MINUTES+" INTEGER,"+
+                COLUMN_MINUTES_USED_TODAY+" INTEGER,"+
+                COLUMN_BLOCKED+" BOOL,"+
+                COLUMN_TIME_OUT+" BOOL"+
                 ");");
     }
     @Override
@@ -53,10 +55,13 @@ public class AppPreferences extends SQLiteOpenHelper {
                     int dailyLimitMinutes = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_DAILY_LIMIT_MINUTES));
                     int minutesUsedToday = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_MINUTES_USED_TODAY));
                     int block = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_BLOCKED));
+                    int timeOut = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TIME_OUT));
                     boolean isBlocked = (block == 1);
+                    boolean isTimeOut = (timeOut == 1);
                     app = new AppInfo(id, packageName, appName, dailyLimitMinutes);
                     app.setMinutesUsedToday(minutesUsedToday);
                     app.setBlocked(isBlocked);
+                    app.setTimeOut(isTimeOut);
                 }
             }
         }catch (Exception e){
@@ -76,11 +81,11 @@ public class AppPreferences extends SQLiteOpenHelper {
                         int dailyLimitMinutes = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_DAILY_LIMIT_MINUTES));
                         int minutesUsedToday = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_MINUTES_USED_TODAY));
                         int block = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_BLOCKED));
-
+                        int timeOut = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TIME_OUT));
                         AppInfo app = new AppInfo(id, packageName, appName, dailyLimitMinutes);
                         app.setMinutesUsedToday(minutesUsedToday);
                         app.setBlocked(block == 1);
-
+                        app.setTimeOut(timeOut == 1);
                         appList.add(app);
                     } while (cursor.moveToNext());
                 }
@@ -102,11 +107,11 @@ public class AppPreferences extends SQLiteOpenHelper {
                         int dailyLimitMinutes = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_DAILY_LIMIT_MINUTES));
                         int minutesUsedToday = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_MINUTES_USED_TODAY));
                         int block = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_BLOCKED));
-
+                        int timeOut = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TIME_OUT));
                         AppInfo app = new AppInfo(id, packageName, appName, dailyLimitMinutes);
                         app.setMinutesUsedToday(minutesUsedToday);
                         app.setBlocked(block == 1);
-
+                        app.setTimeOut(timeOut == 1);
                         appList.add(app);
                     } while (cursor.moveToNext());
                 }
@@ -146,6 +151,7 @@ public class AppPreferences extends SQLiteOpenHelper {
         values.put(COLUMN_DAILY_LIMIT_MINUTES,app.getDailyLimitMinutes());
         values.put(COLUMN_MINUTES_USED_TODAY,app.getMinutesUsedToday());
         values.put(COLUMN_BLOCKED,app.isBlocked());
+        values.put(COLUMN_TIME_OUT,app.isTimeOut());
         return values;
     }
 }

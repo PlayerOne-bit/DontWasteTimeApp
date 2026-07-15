@@ -70,7 +70,7 @@ public class AppActivity extends AppCompatActivity {
             View row = getLayoutInflater().inflate(R.layout.app_card, savedAppsContainer, false);
             ImageView appIcon = row.findViewById(R.id.appIcon);
             TextView appName = row.findViewById(R.id.appName);
-            TextView appDailyMinutesUsedToday = findViewById(R.id.appDailyMinutesUsedToday);
+            TextView appDailyMinutesUsedToday = row.findViewById(R.id.appDailyMinutesUsedToday);
             ProgressBar appProgressBar = row.findViewById(R.id.appProgressBar);
 
             appName.setText(app.getAppName());
@@ -139,8 +139,12 @@ public class AppActivity extends AppCompatActivity {
         if(app.isBlocked()) {
             text="BLOCKED";
             bar.setProgress(bar.getMax());
+            bar.setProgressTintList(ColorStateList.valueOf(colors[0]));
+        }else if (app.isTimeOut()){
+            text="TIME OUT";
+            bar.setProgress(bar.getMax());
             bar.setProgressTintList(ColorStateList.valueOf(colors[1]));
-        }else if (app.getDailyLimitMinutes()>0){
+        }else{
             int totalMinutes = app.getMinutesUsedToday();
             int hours = totalMinutes / 60;
             String minutesUsedToday = ((hours>0)?(hours+"h "):"") + (totalMinutes % 60+"m");
@@ -149,12 +153,9 @@ public class AppActivity extends AppCompatActivity {
             String dailyLimitMinutes =((maxHours>0)?(maxHours+"h "):"") + (maxTotalMinutes % 60 +"m");
             text = String.format("%s / %s",minutesUsedToday,dailyLimitMinutes);
 
-            int percentUsed = (int) ((app.getMinutesUsedToday() / (float) app.getDailyLimitMinutes()) * 100);
+            int percentUsed = (int) ((totalMinutes/ (float) maxTotalMinutes) * 100);
             bar.setProgress(Math.min(percentUsed, 100));
             bar.setProgressTintList(ColorStateList.valueOf(colors[2]));
-        }else{
-            text="TIME OUT";
-            bar.setProgressTintList(ColorStateList.valueOf(colors[0]));
         }
         label.setText(text);
     }
