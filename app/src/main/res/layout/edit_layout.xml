@@ -184,7 +184,7 @@
                     android:id="@+id/editStatusLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Auto (time-based)"
+                    android:text="Block the App"
                     android:textColor="@color/white"
                     android:textSize="16sp" />
 

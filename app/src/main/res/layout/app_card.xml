@@ -14,10 +14,7 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="5dp"
-        android:paddingBottom="5dp"
-        android:paddingStart="10dp"
-        android:paddingEnd="15dp"
+        android:padding="10dp"
         android:gravity="center_vertical">
 
         <ImageView
@@ -26,6 +23,9 @@
             android:layout_height="48dp"
             app:srcCompat="@drawable/app_icon"
             />
+        <Space
+            android:layout_width="10dp"
+            android:layout_height="match_parent"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

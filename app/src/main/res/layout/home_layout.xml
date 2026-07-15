@@ -58,6 +58,7 @@
                 android:textColor="#66676E" />
 
             <TextView
+                android:id="@+id/totalUsedMinutes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Xh XXm"
@@ -79,6 +80,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/timeOutText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="X"
@@ -102,6 +104,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/blockText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="X"
@@ -125,6 +128,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/activeText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="X"

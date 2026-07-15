@@ -18,6 +18,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,14 +51,43 @@ public class HomeActivity extends AppCompatActivity {
         try(AppPreferences db = new AppPreferences(this)){
             apps = db.getAllApps();
             sortTop5(apps);
-            displayAllApps(savedTop5AppList);
+            displayRecordTexts(apps);
+            displayTop5Apps(savedTop5AppList);
         }
+    }
+    private void displayRecordTexts(List<AppInfo> apps){
+        LocalDate currentDate = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("E - dd/MM/yyyy");
+        TextView dateText = findViewById(R.id.dateText);
+        dateText.setText(currentDate.format(formatter));
+
+        TextView totalMinutesUsedText = findViewById(R.id.totalUsedMinutes);
+        TextView activeText = findViewById(R.id.activeText);
+        TextView blockText = findViewById(R.id.blockText);
+        TextView timeOutText = findViewById(R.id.timeOutText);
+        int totalActive=0,totalBlock=0,totalTimeOut=0, totalUsedMinutes=0;
+        for (AppInfo app: apps){
+            if(app.isBlocked()){
+                totalBlock++;
+            }else if(app.isTimeOut()){
+                totalTimeOut++;
+            }else{
+                totalActive++;
+            }
+            totalUsedMinutes+= app.getMinutesUsedToday();
+        }
+        int hours = totalUsedMinutes/60, minutes = totalUsedMinutes %60;
+        String totalTime = ((hours>0)?hours+"h ":"")+minutes+"m";
+        totalMinutesUsedText.setText(totalTime);
+        activeText.setText(totalActive);
+        blockText.setText(totalBlock);
+        timeOutText.setText(totalTimeOut);
     }
     private void sortTop5(List<AppInfo> apps){
         apps.sort((a,b)->Integer.compare(b.getMinutesUsedToday(),a.getMinutesUsedToday()));
         savedTop5AppList=apps.subList(0,Math.min(3,apps.size()));
     }
-    private void displayAllApps(List<AppInfo> apps){
+    private void displayTop5Apps(List<AppInfo> apps){
         LinearLayout topSavedAppsContainer = findViewById(R.id.topSavedAppsContainer);
         topSavedAppsContainer.removeAllViews();
         for(AppInfo app : apps){
@@ -80,7 +111,6 @@ public class HomeActivity extends AppCompatActivity {
                 Color.parseColor("#D9181B"),
                 Color.parseColor("#FF8200"),
                 Color.parseColor("#B8FF2F")
-
         };
         if(app.isBlocked()){
             text="BLOCKED";
@@ -96,7 +126,7 @@ public class HomeActivity extends AppCompatActivity {
             int hours = totalMinutes / 60;
             int maxHours = maxTotalMinutes / 60;
             String minutes = ((hours>0)?hours+"h ":"")+(totalMinutes % 60)+"m";
-            String maxMinutes = ((maxHours>60)?maxHours+"h ":"")+(totalMinutes % 60)+"m";
+            String maxMinutes = ((maxHours>60)?maxHours+"h ":"")+(maxTotalMinutes % 60)+"m";
             text = String.format("%s / %s",minutes,maxMinutes);
 
             int percentUsed = (int) ((totalMinutes / (float) maxTotalMinutes) * 100);
