@@ -3,12 +3,18 @@ package app.dontwastetimeapp.activities;
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
 import static android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP;
 
+import android.app.AppOpsManager;
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -17,6 +23,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,11 +33,13 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import app.dontwastetimeapp.R;
 import app.dontwastetimeapp.classes.AppInfo;
 import app.dontwastetimeapp.database.AppPreferences;
+import app.dontwastetimeapp.services.UsageMonitorService;
 
 public class AppActivity extends AppCompatActivity {
     private List<AppInfo> allSavedApps = new ArrayList<>();
@@ -50,7 +59,75 @@ public class AppActivity extends AppCompatActivity {
     @Override
     public void onResume(){
         super.onResume();
+        if (hasNoUsageAccessPermission()) {
+            requestUsageAccessPermission();
+        }
+        startUsageMonitorService();
+        refreshUsageStats();
         loadSavedApps();
+    }
+    private void startUsageMonitorService() {
+        Intent serviceIntent = new Intent(this, UsageMonitorService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent);
+        } else {
+            startService(serviceIntent);
+        }
+    }
+    private boolean hasNoUsageAccessPermission() {
+        AppOpsManager appOps = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
+        int mode = appOps.checkOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(),
+                getPackageName()
+        );
+        return mode != AppOpsManager.MODE_ALLOWED;
+    }
+
+    private void requestUsageAccessPermission() {
+        Toast.makeText(this, "Please enable usage access for this app", Toast.LENGTH_LONG).show();
+        Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+        startActivity(intent);
+    }
+
+    private int getMinutesUsedToday(String packageName) {
+        UsageStatsManager usm = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        long startTime = calendar.getTimeInMillis();
+        long endTime = System.currentTimeMillis();
+
+        List<UsageStats> statsList = usm.queryUsageStats(
+                UsageStatsManager.INTERVAL_DAILY, startTime, endTime);
+
+        long totalForegroundMillis = 0;
+        if (statsList != null) {
+            for (UsageStats stats : statsList) {
+                if (stats.getPackageName().equals(packageName)) {
+                    totalForegroundMillis += stats.getTotalTimeInForeground();
+                }
+            }
+        }
+
+        return (int) (totalForegroundMillis / 1000 / 60);
+    }
+
+    private void refreshUsageStats() {
+        if (hasNoUsageAccessPermission()) {
+            return;
+        }
+
+        try (AppPreferences db = new AppPreferences(this)) {
+            List<AppInfo> apps = db.getAllApps();
+            for (AppInfo app : apps) {
+                int minutesUsed = getMinutesUsedToday(app.getPackageName());
+                app.setMinutesUsedToday(minutesUsed);
+                db.editApp(app);
+            }
+        }
     }
     private void loadSavedApps(){
         try(AppPreferences db = new AppPreferences(this)){
@@ -129,7 +206,7 @@ public class AppActivity extends AppCompatActivity {
         });
     }
     private void updateTimeLimitLabel(TextView label,ProgressBar bar,AppInfo app) {
-        String text="";
+        String text;
 
         int[] colors={
                 Color.parseColor("#D9181B"),
@@ -146,16 +223,17 @@ public class AppActivity extends AppCompatActivity {
             bar.setProgressTintList(ColorStateList.valueOf(colors[1]));
         }else{
             int totalMinutes = app.getMinutesUsedToday();
-            int hours = totalMinutes / 60;
-            String minutesUsedToday = ((hours>0)?(hours+"h "):"") + (totalMinutes % 60+"m");
+            int hours = totalMinutes / 60, minutes = totalMinutes % 60;
+            String minutesUsedToday = ((hours>0)?(hours+"h ")+((minutes>0)?minutes % 60+"m":""):(minutes % 60+"m"));
             int maxTotalMinutes = app.getDailyLimitMinutes();
-            int maxHours = maxTotalMinutes / 60;
-            String dailyLimitMinutes =((maxHours>0)?(maxHours+"h "):"") + (maxTotalMinutes % 60 +"m");
+            int maxHours = maxTotalMinutes / 60, maxMinutes = maxTotalMinutes % 60;
+            String dailyLimitMinutes =((maxHours>0)?(maxHours+"h ")+((maxMinutes>0)?maxMinutes +"m":""):maxMinutes +"m") ;
             text = String.format("%s / %s",minutesUsedToday,dailyLimitMinutes);
 
             int percentUsed = (int) ((totalMinutes/ (float) maxTotalMinutes) * 100);
             bar.setProgress(Math.min(percentUsed, 100));
             bar.setProgressTintList(ColorStateList.valueOf(colors[2]));
+
         }
         label.setText(text);
     }

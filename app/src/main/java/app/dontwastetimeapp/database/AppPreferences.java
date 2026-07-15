@@ -137,10 +137,14 @@ public class AppPreferences extends SQLiteOpenHelper {
         }
         return result >0;
     }
-    public boolean removeApp(int id){
+    public boolean removeApp(AppInfo app){
+        if (app != null && (app.isBlocked() || app.isTimeOut())) {
+            return false;
+        }
+
         int result=0;
         try(SQLiteDatabase db=this.getWritableDatabase()) {
-            result = db.delete(TABLE_APP_INFO, COLUMN_ID + "=?", new String[]{String.valueOf(id)});
+            result = db.delete(TABLE_APP_INFO, COLUMN_ID + "=?", new String[]{String.valueOf(app.getId())});
         }
         return result>0;
     }

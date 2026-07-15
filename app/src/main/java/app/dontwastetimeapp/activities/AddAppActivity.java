@@ -15,14 +15,15 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SwitchCompat;
 import androidx.cardview.widget.CardView;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import app.dontwastetimeapp.R;
 import app.dontwastetimeapp.classes.AppInfo;
@@ -70,18 +71,30 @@ public class AddAppActivity extends AppCompatActivity {
         PackageManager pm = getPackageManager();
         List<ApplicationInfo> rawList = pm.getInstalledApplications(0);
         String myPackageName = getPackageName();
+        Set<String> savedPackageNames = getSavedPackageNames();
 
         allInstalledApps = new ArrayList<>();
         for (ApplicationInfo appInfo : rawList) {
             boolean isSystemApp = (appInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
             boolean isSelf = appInfo.packageName.equals(myPackageName);
-            if (!isSystemApp && !isSelf) {
+            boolean isAlreadySaved = savedPackageNames.contains(appInfo.packageName);
+            if (!isSystemApp && !isSelf && !isAlreadySaved) {
                 allInstalledApps.add(appInfo);
             }
         }
 
         sortAppsAlphabetically(allInstalledApps);
         displayApps(allInstalledApps);
+    }
+    private Set<String> getSavedPackageNames() {
+        Set<String> packageNames = new HashSet<>();
+        try (AppPreferences db = new AppPreferences(this)) {
+            List<AppInfo> savedApps = db.getAllApps();
+            for (AppInfo app : savedApps) {
+                packageNames.add(app.getPackageName());
+            }
+        }
+        return packageNames;
     }
     private void sortAppsAlphabetically(List<ApplicationInfo> apps) {
         PackageManager pm = getPackageManager();
@@ -208,13 +221,14 @@ public class AddAppActivity extends AppCompatActivity {
 
         AppInfo newApp = new AppInfo(packageName, appName, dailyLimitMinutes);
 
-        AppPreferences db = new AppPreferences(this);
-        boolean success = db.addApp(newApp);
+        try(AppPreferences db = new AppPreferences(this)) {
+            boolean success = db.addApp(newApp);
 
-        if (success) {
-            finish();
-        } else {
-            Toast.makeText(this, "Failed to save app", Toast.LENGTH_SHORT).show();
+            if (success) {
+                finish();
+            } else {
+                Toast.makeText(this, "Failed to save app", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

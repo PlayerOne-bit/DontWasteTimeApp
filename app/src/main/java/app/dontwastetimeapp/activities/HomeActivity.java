@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -18,16 +19,19 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import android.os.Handler;
+import android.os.Looper;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-
 import app.dontwastetimeapp.R;
 import app.dontwastetimeapp.classes.AppInfo;
 import app.dontwastetimeapp.database.AppPreferences;
+import app.dontwastetimeapp.services.UsageMonitorService;
 
 public class HomeActivity extends AppCompatActivity {
+    private Handler refreshHandler;
+    private Runnable refreshRunnable;
     private List<AppInfo> savedTop5AppList;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,15 +43,38 @@ public class HomeActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        startUsageMonitorService();
         setUpNavigation();
     }
     @Override
-    public void onResume(){
+    protected void onResume() {
         super.onResume();
         loadSavedApps();
+        startPeriodicRefresh();
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopPeriodicRefresh();
+    }
+    private void startPeriodicRefresh() {
+        refreshHandler = new Handler(Looper.getMainLooper());
+        refreshRunnable = new Runnable() {
+            @Override
+            public void run() {
+                loadSavedApps();
+                refreshHandler.postDelayed(this, 5000);
+            }
+        };
+        refreshHandler.post(refreshRunnable);
+    }
+    private void stopPeriodicRefresh() {
+        if (refreshHandler != null && refreshRunnable != null) {
+            refreshHandler.removeCallbacks(refreshRunnable);
+        }
     }
     private void loadSavedApps(){
-        List<AppInfo> apps = new ArrayList<>();
+        List<AppInfo> apps;
         try(AppPreferences db = new AppPreferences(this)){
             apps = db.getAllApps();
             sortTop5(apps);
@@ -77,11 +104,11 @@ public class HomeActivity extends AppCompatActivity {
             totalUsedMinutes+= app.getMinutesUsedToday();
         }
         int hours = totalUsedMinutes/60, minutes = totalUsedMinutes %60;
-        String totalTime = ((hours>0)?hours+"h ":"")+minutes+"m";
+        String totalTime = ((hours>0)?hours+"h "+((minutes>0)?minutes+"m":""):minutes+"m");
         totalMinutesUsedText.setText(totalTime);
-        activeText.setText(totalActive);
-        blockText.setText(totalBlock);
-        timeOutText.setText(totalTimeOut);
+        activeText.setText(String.valueOf(totalActive));
+        blockText.setText(String.valueOf(totalBlock));
+        timeOutText.setText(String.valueOf(totalTimeOut));
     }
     private void sortTop5(List<AppInfo> apps){
         apps.sort((a,b)->Integer.compare(b.getMinutesUsedToday(),a.getMinutesUsedToday()));
@@ -106,7 +133,7 @@ public class HomeActivity extends AppCompatActivity {
         toggleHintTopApps(apps.isEmpty());
     }
     private void updateTimeLimitLabel(TextView label, ProgressBar bar, AppInfo app){
-        String text="";
+        String text;
         int[] colors={
                 Color.parseColor("#D9181B"),
                 Color.parseColor("#FF8200"),
@@ -126,7 +153,7 @@ public class HomeActivity extends AppCompatActivity {
             int hours = totalMinutes / 60;
             int maxHours = maxTotalMinutes / 60;
             String minutes = ((hours>0)?hours+"h ":"")+(totalMinutes % 60)+"m";
-            String maxMinutes = ((maxHours>60)?maxHours+"h ":"")+(maxTotalMinutes % 60)+"m";
+            String maxMinutes = ((maxHours>0)?maxHours+"h ":"")+(maxTotalMinutes % 60)+"m";
             text = String.format("%s / %s",minutes,maxMinutes);
 
             int percentUsed = (int) ((totalMinutes / (float) maxTotalMinutes) * 100);
@@ -160,5 +187,13 @@ public class HomeActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
         overridePendingTransition(0,0);
+    }
+    private void startUsageMonitorService() {
+        Intent serviceIntent = new Intent(this, UsageMonitorService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent);
+        } else {
+            startService(serviceIntent);
+        }
     }
 }

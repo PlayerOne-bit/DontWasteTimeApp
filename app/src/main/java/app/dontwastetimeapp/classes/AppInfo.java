@@ -64,7 +64,5 @@ public class AppInfo {
         return minutesUsedToday >= dailyLimitMinutes;
     }
 
-    public boolean isCurrentlyBlocked() {
-        return blocked || isOverLimit();
-    }
+
 }
