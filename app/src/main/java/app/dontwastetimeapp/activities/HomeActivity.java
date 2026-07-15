@@ -36,7 +36,7 @@ import app.dontwastetimeapp.classes.AppInfo;
 import app.dontwastetimeapp.database.AppPreferences;
 import app.dontwastetimeapp.services.DailyResetReceiver;
 import app.dontwastetimeapp.services.UsageMonitorService;
-
+import app.dontwastetimeapp.services.AppBlockAccessibilityService;
 public class HomeActivity extends AppCompatActivity {
     private Handler refreshHandler;
     private Runnable refreshRunnable;
@@ -215,9 +215,45 @@ public class HomeActivity extends AppCompatActivity {
         scheduleDailyReset();
     }
     private void requestAccessibilityPermission() {
-        Toast.makeText(this, "Please enable Don't Waste Time in Accessibility settings", Toast.LENGTH_LONG).show();
-        Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-        startActivity(intent);
+        if (!isAccessibilityServiceEnabled()) {
+            Toast.makeText(this, "Please enable Don't Waste Time in Accessibility settings", Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+            startActivity(intent);
+        }
+    }
+
+    private boolean isAccessibilityServiceEnabled() {
+        String serviceName = getPackageName() + "/" + AppBlockAccessibilityService.class.getCanonicalName();
+
+        int accessibilityEnabled;
+        try {
+            accessibilityEnabled = Settings.Secure.getInt(
+                    getContentResolver(),
+                    Settings.Secure.ACCESSIBILITY_ENABLED
+            );
+        } catch (Settings.SettingNotFoundException e) {
+            return false;
+        }
+
+        if (accessibilityEnabled != 1) {
+            return false;
+        }
+
+        String enabledServices = Settings.Secure.getString(
+                getContentResolver(),
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        );
+
+        if (enabledServices == null) {
+            return false;
+        }
+
+        for (String service : enabledServices.split(":")) {
+            if (service.equalsIgnoreCase(serviceName)) {
+                return true;
+            }
+        }
+        return false;
     }
     private void scheduleDailyReset() {
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
