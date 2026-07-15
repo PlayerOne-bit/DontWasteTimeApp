@@ -148,6 +148,17 @@ public class AppPreferences extends SQLiteOpenHelper {
         }
         return result>0;
     }
+    public boolean resetAllTimeOuts() {
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_TIME_OUT, false);
+        values.put(COLUMN_MINUTES_USED_TODAY, 0);
+
+        int result;
+        try (SQLiteDatabase db = this.getWritableDatabase()) {
+            result = db.update(TABLE_APP_INFO, values, null, null);
+        }
+        return result >= 0;
+    }
     public ContentValues getValues(AppInfo app){
         ContentValues values = new ContentValues();
         values.put(COLUMN_PACKAGE_NAME,app.getPackageName());

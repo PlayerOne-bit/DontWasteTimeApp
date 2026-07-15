@@ -1,5 +1,8 @@
 package app.dontwastetimeapp.activities;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
@@ -7,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -21,12 +25,16 @@ import androidx.core.view.WindowInsetsCompat;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.widget.Toast;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 import java.util.List;
 import app.dontwastetimeapp.R;
 import app.dontwastetimeapp.classes.AppInfo;
 import app.dontwastetimeapp.database.AppPreferences;
+import app.dontwastetimeapp.services.DailyResetReceiver;
 import app.dontwastetimeapp.services.UsageMonitorService;
 
 public class HomeActivity extends AppCompatActivity {
@@ -44,6 +52,8 @@ public class HomeActivity extends AppCompatActivity {
             return insets;
         });
         startUsageMonitorService();
+        requestAccessibilityPermission();
+        scheduleDailyReset();
         setUpNavigation();
     }
     @Override
@@ -83,11 +93,18 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
     private void displayRecordTexts(List<AppInfo> apps){
-        LocalDate currentDate = LocalDate.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("E - dd/MM/yyyy");
+        LocalDate currentDate = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            currentDate = LocalDate.now();
+        }
+        DateTimeFormatter formatter = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            formatter = DateTimeFormatter.ofPattern("E - dd/MM/yyyy");
+        }
         TextView dateText = findViewById(R.id.dateText);
-        dateText.setText(currentDate.format(formatter));
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            dateText.setText(currentDate.format(formatter));
+        }
         TextView totalMinutesUsedText = findViewById(R.id.totalUsedMinutes);
         TextView activeText = findViewById(R.id.activeText);
         TextView blockText = findViewById(R.id.blockText);
@@ -195,5 +212,34 @@ public class HomeActivity extends AppCompatActivity {
         } else {
             startService(serviceIntent);
         }
+        scheduleDailyReset();
+    }
+    private void requestAccessibilityPermission() {
+        Toast.makeText(this, "Please enable Don't Waste Time in Accessibility settings", Toast.LENGTH_LONG).show();
+        Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+        startActivity(intent);
+    }
+    private void scheduleDailyReset() {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+        Intent intent = new Intent(this, DailyResetReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 5);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+
+        if (calendar.getTimeInMillis() <= System.currentTimeMillis()) {
+            calendar.add(Calendar.DAY_OF_YEAR, 1); // if 5AM already passed today, schedule for tomorrow
+        }
+
+        alarmManager.setInexactRepeating(
+                AlarmManager.RTC_WAKEUP,
+                calendar.getTimeInMillis(),
+                AlarmManager.INTERVAL_DAY,
+                pendingIntent
+        );
     }
 }

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">DontWasteTimeApp</string>
+    <string name="accessibility_service_description">Monitors which app is open so Don\'t Waste Time can enforce your blocked/timed-out app limits.</string>
 </resources>
