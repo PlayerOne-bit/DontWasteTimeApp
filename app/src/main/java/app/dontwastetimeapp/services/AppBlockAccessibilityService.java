@@ -33,6 +33,7 @@ public class AppBlockAccessibilityService extends AccessibilityService {
             for (AppInfo app : apps) {
                 boolean isRestricted = app.isBlocked() || app.isTimeOut();
                 if (app.getPackageName().equals(foregroundPackage) && isRestricted) {
+                    Log.d(TAG, "MATCH - redirecting home");
                     goHomeAndWarn();
                     return;
                 }
