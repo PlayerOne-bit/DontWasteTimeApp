@@ -33,7 +33,6 @@
             android:text="Block distractions and lock in" />
     </LinearLayout>
 
-    <!-- Timer card -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cardViewTimer"
         android:layout_width="0dp"
@@ -59,23 +58,23 @@
                 android:text="NOT STARTED"
                 android:textColor="#66676E" />
 
-            <ProgressBar
-                android:id="@+id/focusRing"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="180dp"
-                android:layout_height="180dp"
-                android:layout_marginTop="16dp"
-                android:indeterminate="false"
-                android:max="100"
-                android:progress="20"
-                android:progressTint="#8EC426" />
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/appProgressBar"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                app:indicatorSize="100dp"
+                app:trackThickness="10dp"
+                app:trackColor="#33FFFFFF"
+                app:indicatorColor="#3B82F6"
+                android:progress="75"
+                app:trackCornerRadius="0dp" />
 
             <TextView
                 android:id="@+id/focusTimeRemaining"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="25:00"
+                android:text="30m"
                 android:textColor="@color/white"
                 android:textSize="36sp" />
 
@@ -96,7 +95,7 @@
                     android:paddingTop="8dp"
                     android:paddingEnd="16dp"
                     android:paddingBottom="8dp"
-                    android:text="25m"
+                    android:text="30m"
                     android:textColor="@color/white" />
 
                 <TextView
@@ -109,7 +108,7 @@
                     android:paddingTop="8dp"
                     android:paddingEnd="16dp"
                     android:paddingBottom="8dp"
-                    android:text="45m"
+                    android:text="1h"
                     android:textColor="@color/white" />
 
                 <TextView
@@ -121,7 +120,7 @@
                     android:paddingTop="8dp"
                     android:paddingEnd="16dp"
                     android:paddingBottom="8dp"
-                    android:text="60m"
+                    android:text="2h"
                     android:textColor="@color/white" />
 
             </LinearLayout>
@@ -132,7 +131,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                app:cardBackgroundColor="#8EC426"
+                app:cardBackgroundColor="#3B82F6"
                 app:cardCornerRadius="10dp">
 
                 <TextView
@@ -150,6 +149,72 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
+    <androidx.cardview.widget.CardView
+        android:visibility="gone"
+        android:id="@+id/restCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        app:cardBackgroundColor="#141414"
+        app:cardCornerRadius="10dp"
+        app:layout_constraintEnd_toStartOf="@+id/space2"
+        app:layout_constraintStart_toEndOf="@+id/space"
+        app:layout_constraintTop_toBottomOf="@+id/focusHeader">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="NOT STARTED"
+                android:textColor="#66676E" />
+
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                app:indicatorSize="100dp"
+                app:trackThickness="10dp"
+                app:trackColor="#33FFFFFF"
+                app:indicatorColor="#B8FF2F"
+                android:progress="75"
+                app:trackCornerRadius="0dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="5m"
+                android:textColor="@color/white"
+                android:textSize="36sp" />
+
+
+            <!-- Start / Stop button -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                app:cardBackgroundColor="#B8FF2F"
+                app:cardCornerRadius="10dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:text="Start Rest Session"
+                    android:textColor="@color/black"
+                    android:textStyle="bold" />
+
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 
 
     <include layout="@layout/navigation_panel" />

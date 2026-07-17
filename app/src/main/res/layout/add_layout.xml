@@ -184,8 +184,8 @@
                 android:min="15"
                 android:max="240"
                 android:progress="60"
-                android:progressTint="#8EC426"
-                android:thumbTint="#8EC426" />
+                android:progressTint="#3B82F6"
+                android:thumbTint="#3B82F6" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -213,7 +213,7 @@
         android:id="@+id/saveAppButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:cardBackgroundColor="#8EC426"
+        app:cardBackgroundColor="#3B82F6"
         app:cardCornerRadius="10dp"
         android:layout_marginBottom="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
