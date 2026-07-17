@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityService;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.Toast;
 
@@ -13,9 +14,10 @@ import app.dontwastetimeapp.classes.AppInfo;
 import app.dontwastetimeapp.database.AppPreferences;
 
 public class AppBlockAccessibilityService extends AccessibilityService {
-
+    private static final String TAG = "AppBlockService";
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
+        Log.d(TAG, "Event received: type=" + event.getEventType());
         if (event.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             return;
         }
@@ -47,6 +49,12 @@ public class AppBlockAccessibilityService extends AccessibilityService {
         new Handler(Looper.getMainLooper()).post(() ->
                 Toast.makeText(this, "You can't use this app right now, you have to focus", Toast.LENGTH_LONG).show()
         );
+    }
+    @Override
+    public void onServiceConnected() {
+        super.onServiceConnected();
+        Log.d(TAG, "Accessibility service connected");
+
     }
 
     @Override

@@ -1,6 +1,7 @@
 package app.dontwastetimeapp.activities;
 
 import android.app.AlarmManager;
+import android.app.AppOpsManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -51,9 +52,11 @@ public class HomeActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        if (!hasUsageAccessPermission()) {
+            requestUsageAccessPermission();
+        }
         startUsageMonitorService();
         requestAccessibilityPermission();
-        scheduleDailyReset();
         setUpNavigation();
     }
     @Override
@@ -129,7 +132,7 @@ public class HomeActivity extends AppCompatActivity {
     }
     private void sortTop5(List<AppInfo> apps){
         apps.sort((a,b)->Integer.compare(b.getMinutesUsedToday(),a.getMinutesUsedToday()));
-        savedTop5AppList=apps.subList(0,Math.min(3,apps.size()));
+        savedTop5AppList=apps.subList(0,Math.min(5,apps.size()));
     }
     private void displayTop5Apps(List<AppInfo> apps){
         LinearLayout topSavedAppsContainer = findViewById(R.id.topSavedAppsContainer);
@@ -212,7 +215,6 @@ public class HomeActivity extends AppCompatActivity {
         } else {
             startService(serviceIntent);
         }
-        scheduleDailyReset();
     }
     private void requestAccessibilityPermission() {
         if (!isAccessibilityServiceEnabled()) {
@@ -221,7 +223,20 @@ public class HomeActivity extends AppCompatActivity {
             startActivity(intent);
         }
     }
-
+    private void requestUsageAccessPermission() {
+        Toast.makeText(this, "Please enable Usage Access for this app", Toast.LENGTH_LONG).show();
+        Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+        startActivity(intent);
+    }
+    private boolean hasUsageAccessPermission() {
+        AppOpsManager appOps = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
+        int mode = appOps.checkOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(),
+                getPackageName()
+        );
+        return mode == AppOpsManager.MODE_ALLOWED;
+    }
     private boolean isAccessibilityServiceEnabled() {
         String serviceName = getPackageName() + "/" + AppBlockAccessibilityService.class.getCanonicalName();
 

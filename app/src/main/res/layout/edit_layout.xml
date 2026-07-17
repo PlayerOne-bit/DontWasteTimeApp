@@ -141,6 +141,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
+                android:min="15"
                 android:max="240"
                 android:progress="60"
                 android:progressTint="#8EC426"
@@ -192,8 +193,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Toggle to force block, regardless of time used" />
-            </LinearLayout>
 
+            </LinearLayout>
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/blockSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:thumbTint="@color/switch_thumb_color"
+                app:trackTint="@color/switch_track_color" />
 
 
         </LinearLayout>
@@ -201,15 +208,17 @@
 
     <!-- Save button -->
     <androidx.cardview.widget.CardView
+        android:layout_marginBottom="20dp"
         android:id="@+id/saveEditButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         app:cardBackgroundColor="#8EC426"
         app:cardCornerRadius="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/deleteAppButton"
         app:layout_constraintEnd_toStartOf="@+id/space2"
         app:layout_constraintStart_toEndOf="@+id/space"
-        app:layout_constraintTop_toBottomOf="@+id/cardViewStatus">
+        >
 
         <TextView
             android:layout_width="match_parent"
@@ -227,13 +236,12 @@
         android:id="@+id/deleteAppButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="20dp"
         app:cardBackgroundColor="#1F1F1F"
         app:cardCornerRadius="10dp"
+        android:layout_marginBottom="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/space2"
-        app:layout_constraintStart_toEndOf="@+id/space"
-        app:layout_constraintTop_toBottomOf="@+id/saveEditButton">
+        app:layout_constraintStart_toEndOf="@+id/space">
 
         <TextView
             android:layout_width="match_parent"

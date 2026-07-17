@@ -72,7 +72,7 @@ public class AppPreferences extends SQLiteOpenHelper {
     public List<AppInfo> searchApps(String search){
         List<AppInfo> appList = new ArrayList<>();
         try (SQLiteDatabase db = this.getReadableDatabase()) {
-            try (Cursor cursor = db.query(TABLE_APP_INFO, null, COLUMN_APP_NAME+"LIKE ?", new String[]{"%"+search+"%"}, null, null, COLUMN_APP_NAME+" ASC")) {
+            try (Cursor cursor = db.query(TABLE_APP_INFO, null, COLUMN_APP_NAME+" LIKE ?", new String[]{"%"+search+"%"}, null, null, COLUMN_APP_NAME+" ASC")) {
                 if (cursor != null && cursor.moveToFirst()) {
                     do {
                         int id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID));

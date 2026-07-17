@@ -150,43 +150,7 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- Blocked apps list -->
-    <LinearLayout
-        android:id="@+id/blockedAppsHeader"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toStartOf="@+id/space2"
-        app:layout_constraintStart_toEndOf="@+id/space"
-        app:layout_constraintTop_toBottomOf="@+id/cardViewTimer">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="BLOCKED DURING FOCUS" />
-    </LinearLayout>
-
-    <ScrollView
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="20dp"
-        app:layout_constraintBottom_toTopOf="@+id/cardView3"
-        app:layout_constraintEnd_toStartOf="@+id/space2"
-        app:layout_constraintStart_toEndOf="@+id/space"
-        app:layout_constraintTop_toBottomOf="@+id/blockedAppsHeader">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <include layout="@layout/app_card" />
-            <include layout="@layout/app_card" />
-            <include layout="@layout/app_card" />
-        </LinearLayout>
-    </ScrollView>
 
     <include layout="@layout/navigation_panel" />
 
