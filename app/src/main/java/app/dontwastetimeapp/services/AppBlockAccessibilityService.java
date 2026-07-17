@@ -1,6 +1,7 @@
 package app.dontwastetimeapp.services;
 
 import android.accessibilityservice.AccessibilityService;
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
@@ -56,6 +57,15 @@ public class AppBlockAccessibilityService extends AccessibilityService {
         super.onServiceConnected();
         Log.d(TAG, "Accessibility service connected");
 
+        AccessibilityServiceInfo info = new AccessibilityServiceInfo();
+        info.eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
+        info.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC;
+        info.notificationTimeout = 100;
+        info.flags = AccessibilityServiceInfo.DEFAULT;
+
+        setServiceInfo(info);
+
+        Log.d(TAG, "Service info set programmatically: eventTypes=" + info.eventTypes);
     }
 
     @Override
