@@ -29,6 +29,10 @@ public class AppBlockAccessibilityService extends AccessibilityService {
         }
         String foregroundPackage = packageNameCharSeq.toString();
 
+        if (foregroundPackage.equals(getPackageName())) {
+            return; // never redirect away from our own app
+        }
+
         try (AppPreferences db = new AppPreferences(this)) {
             List<AppInfo> apps = db.getAllApps();
             for (AppInfo app : apps) {
@@ -43,14 +47,21 @@ public class AppBlockAccessibilityService extends AccessibilityService {
     }
 
     private void goHomeAndWarn() {
-        Intent homeIntent = new Intent(Intent.ACTION_MAIN);
-        homeIntent.addCategory(Intent.CATEGORY_HOME);
-        homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(homeIntent);
+        Log.d(TAG, "goHomeAndWarn() called");
+        try {
+            Intent homeIntent = new Intent(Intent.ACTION_MAIN);
+            homeIntent.addCategory(Intent.CATEGORY_HOME);
+            homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(homeIntent);
+            Log.d(TAG, "startActivity(homeIntent) completed without throwing");
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to start home intent", e);
+        }
 
-        new Handler(Looper.getMainLooper()).post(() ->
-                Toast.makeText(this, "You can't use this app right now, you have to focus", Toast.LENGTH_LONG).show()
-        );
+        new Handler(Looper.getMainLooper()).post(() -> {
+            Log.d(TAG, "Toast handler running");
+            Toast.makeText(this, "YOU HAVE TO FOCUS!", Toast.LENGTH_LONG).show();
+        });
     }
     @Override
     public void onServiceConnected() {

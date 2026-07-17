@@ -58,6 +58,7 @@ public class HomeActivity extends AppCompatActivity {
         startUsageMonitorService();
         requestAccessibilityPermission();
         setUpNavigation();
+        scheduleDailyReset();
     }
     @Override
     protected void onResume() {
@@ -275,21 +276,27 @@ public class HomeActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, DailyResetReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+                this, 0, intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
 
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 5);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
 
         if (calendar.getTimeInMillis() <= System.currentTimeMillis()) {
-            calendar.add(Calendar.DAY_OF_YEAR, 1); // if 5AM already passed today, schedule for tomorrow
+            calendar.add(Calendar.DAY_OF_YEAR, 1);
         }
 
-        alarmManager.setInexactRepeating(
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+            alarmManager.setAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+            return;
+        }
+
+        alarmManager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
                 calendar.getTimeInMillis(),
-                AlarmManager.INTERVAL_DAY,
                 pendingIntent
         );
     }
