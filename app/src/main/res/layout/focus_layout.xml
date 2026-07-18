@@ -10,6 +10,7 @@
     android:background="#0B0B0B">
 
     <!-- Header -->
+
     <LinearLayout
         android:id="@+id/focusHeader"
         android:layout_width="0dp"
@@ -19,7 +20,6 @@
         app:layout_constraintEnd_toStartOf="@+id/space2"
         app:layout_constraintStart_toEndOf="@+id/space"
         app:layout_constraintTop_toTopOf="parent">
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -31,18 +31,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Block distractions and lock in" />
-    </LinearLayout>
+        </LinearLayout>
 
     <androidx.cardview.widget.CardView
-        android:id="@+id/cardViewTimer"
+        android:id="@+id/focusCardView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
+        android:layout_marginBottom="80dp"
         app:cardBackgroundColor="#141414"
         app:cardCornerRadius="10dp"
         app:layout_constraintEnd_toStartOf="@+id/space2"
         app:layout_constraintStart_toEndOf="@+id/space"
-        app:layout_constraintTop_toBottomOf="@+id/focusHeader">
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -50,16 +51,16 @@
             android:gravity="center"
             android:orientation="vertical"
             android:padding="24dp">
-
+            
             <TextView
-                android:id="@+id/focusStatusLabel"
+                android:id="@+id/focusState"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="NOT STARTED"
                 android:textColor="#66676E" />
 
             <com.google.android.material.progressindicator.CircularProgressIndicator
-                android:id="@+id/appProgressBar"
+                android:id="@+id/focusCircularProgress"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 app:indicatorSize="100dp"
@@ -86,7 +87,7 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/chip25"
+                    android:id="@+id/lightText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="10dp"
@@ -95,11 +96,12 @@
                     android:paddingTop="8dp"
                     android:paddingEnd="16dp"
                     android:paddingBottom="8dp"
-                    android:text="30m"
+                    android:textAlignment="center"
+                    android:text="LIGHT"
                     android:textColor="@color/white" />
 
                 <TextView
-                    android:id="@+id/chip45"
+                    android:id="@+id/steadyText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="10dp"
@@ -108,11 +110,12 @@
                     android:paddingTop="8dp"
                     android:paddingEnd="16dp"
                     android:paddingBottom="8dp"
-                    android:text="1h"
+                    android:text="STEADY"
+                    android:textAlignment="center"
                     android:textColor="@color/white" />
 
                 <TextView
-                    android:id="@+id/chip60"
+                    android:id="@+id/deepText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="#1F1F1F"
@@ -120,14 +123,20 @@
                     android:paddingTop="8dp"
                     android:paddingEnd="16dp"
                     android:paddingBottom="8dp"
-                    android:text="2h"
+                    android:text="DEEP"
                     android:textColor="@color/white" />
 
             </LinearLayout>
-
+            <TextView
+                android:id="@+id/contextDepth"
+                android:layout_marginTop="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:text="DEPTH"/>
             <!-- Start / Stop button -->
             <androidx.cardview.widget.CardView
-                android:id="@+id/startFocusButton"
+                android:id="@+id/focusButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
@@ -150,16 +159,17 @@
     </androidx.cardview.widget.CardView>
 
     <androidx.cardview.widget.CardView
-        android:visibility="gone"
-        android:id="@+id/restCard"
+        android:id="@+id/restCardView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         app:cardBackgroundColor="#141414"
         app:cardCornerRadius="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/space2"
         app:layout_constraintStart_toEndOf="@+id/space"
-        app:layout_constraintTop_toBottomOf="@+id/focusHeader">
+        android:layout_marginBottom="80dp"
+        >
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -169,22 +179,25 @@
             android:padding="24dp">
 
             <TextView
+                android:id="@+id/restState"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="NOT STARTED"
                 android:textColor="#66676E" />
 
             <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/restCircularProgress"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
-                app:indicatorSize="100dp"
-                app:trackThickness="10dp"
-                app:trackColor="#33FFFFFF"
+                android:progress="95"
                 app:indicatorColor="#B8FF2F"
-                android:progress="75"
-                app:trackCornerRadius="0dp" />
+                app:indicatorSize="100dp"
+                app:trackColor="#33FFFFFF"
+                app:trackCornerRadius="0dp"
+                app:trackThickness="10dp" />
 
             <TextView
+                android:id="@+id/restTimeRemaining"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
@@ -195,6 +208,7 @@
 
             <!-- Start / Stop button -->
             <androidx.cardview.widget.CardView
+                android:id="@+id/restButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
@@ -216,6 +230,48 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
+    <TextView
+        android:layout_marginTop="20dp"
+        android:id="@+id/textView2"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Apps that will be blocked temporarily"
+        android:textColor="@color/white"
+
+        android:textSize="18sp"
+        app:layout_constraintEnd_toStartOf="@+id/space2"
+        app:layout_constraintStart_toEndOf="@+id/space"
+        app:layout_constraintTop_toBottomOf="@+id/focusHeader" />
+
+    <androidx.cardview.widget.CardView
+        android:layout_marginTop="10dp"
+        android:id="@+id/cardView"
+        android:layout_width="0dp"
+        android:layout_height="300dp"
+        app:cardBackgroundColor="#141414"
+        app:cardCornerRadius="10dp"
+        app:layout_constraintEnd_toStartOf="@+id/space2"
+        app:layout_constraintStart_toEndOf="@+id/space"
+        app:layout_constraintTop_toBottomOf="@+id/textView2">
+
+        <ScrollView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/space2"
+            app:layout_constraintStart_toEndOf="@+id/space">
+
+            <LinearLayout
+                android:id="@+id/focusAppContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#41414"
+                android:orientation="vertical">
+
+            </LinearLayout>
+
+        </ScrollView>
+    </androidx.cardview.widget.CardView>
 
     <include layout="@layout/navigation_panel" />
 
