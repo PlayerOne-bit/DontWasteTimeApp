@@ -13,9 +13,11 @@ import java.util.List;
 
 import app.dontwastetimeapp.classes.AppInfo;
 import app.dontwastetimeapp.database.AppPreferences;
+import app.dontwastetimeapp.database.TimerPreferences;
 
 public class AppBlockAccessibilityService extends AccessibilityService {
     private static final String TAG = "AppBlockService";
+    private TimerPreferences timerPrefs;
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         Log.d(TAG, "Event received: type=" + event.getEventType());
@@ -37,7 +39,9 @@ public class AppBlockAccessibilityService extends AccessibilityService {
             List<AppInfo> apps = db.getAllApps();
             for (AppInfo app : apps) {
                 boolean isRestricted = app.isBlocked() || app.isTimeOut();
-                if (app.getPackageName().equals(foregroundPackage) && isRestricted) {
+                if (app.getPackageName().equals(foregroundPackage)
+                        && isRestricted
+                        && timerPrefs.isFocusActive()) {
                     Log.d(TAG, "MATCH - redirecting home");
                     goHomeAndWarn();
                     return;
@@ -67,7 +71,7 @@ public class AppBlockAccessibilityService extends AccessibilityService {
     public void onServiceConnected() {
         super.onServiceConnected();
         Log.d(TAG, "Accessibility service connected");
-
+        timerPrefs = new TimerPreferences(this);
         AccessibilityServiceInfo info = new AccessibilityServiceInfo();
         info.eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
         info.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC;

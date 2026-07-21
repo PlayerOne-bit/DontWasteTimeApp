@@ -1,11 +1,13 @@
 package app.dontwastetimeapp.activities;
 
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -125,6 +127,13 @@ public class AddAppActivity extends AppCompatActivity {
             container.addView(row);
         }
     }
+    private void hideKeyboard() {
+        View view = getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
 
     private void setUpSearch() {
         EditText searchInput = findViewById(R.id.searchInstalledApps);
@@ -156,6 +165,7 @@ public class AddAppActivity extends AppCompatActivity {
         });
     }
     private void selectApp(ApplicationInfo appInfo) {
+        hideKeyboard();
         selectedApp = appInfo;
 
         PackageManager pm = getPackageManager();

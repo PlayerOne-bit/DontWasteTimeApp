@@ -217,7 +217,7 @@ public class AppActivity extends AppCompatActivity {
             text="BLOCKED";
             bar.setProgress(bar.getMax());
             bar.setProgressTintList(ColorStateList.valueOf(colors[0]));
-        }else if (app.isTimeOut()){
+        }else if (app.isTimeOut() || app.isOverLimit()){
             text="TIME OUT";
             bar.setProgress(bar.getMax());
             bar.setProgressTintList(ColorStateList.valueOf(colors[1]));
