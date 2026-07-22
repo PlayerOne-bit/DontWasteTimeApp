@@ -2,17 +2,20 @@ package app.dontwastetimeapp.activities;
 
 import android.app.AlarmManager;
 import android.app.AppOpsManager;
+import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
+import android.view.Window;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -20,6 +23,7 @@ import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.core.graphics.Insets;
 import androidx.core.splashscreen.SplashScreen;
 import androidx.core.splashscreen.SplashScreenViewProvider;
@@ -203,8 +207,20 @@ public class HomeActivity extends AppCompatActivity {
     private void setUpNavigation(){
         LinearLayout navApps = findViewById(R.id.navApps),
                     navFocus = findViewById(R.id.navFocus);
+        ImageView info_button = findViewById(R.id.info_button);
+        info_button.setOnClickListener(v->openInfoCard());
         navApps.setOnClickListener(v-> toNavigate(AppActivity.class));
         navFocus.setOnClickListener(v-> toNavigate(FocusActivity.class));
+    }
+    private void openInfoCard(){
+        final Dialog dialog = new Dialog(HomeActivity.this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.info_card);
+        if (dialog.getWindow() != null)
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        TextView closeButton = dialog.findViewById(R.id.info_close_button);
+        closeButton.setOnClickListener(v-> dialog.dismiss());
+        dialog.show();
     }
     private void toNavigate(Class<?> destination){
         Intent intent = new Intent(HomeActivity.this,destination);

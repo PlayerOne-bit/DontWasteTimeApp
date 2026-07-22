@@ -45,7 +45,6 @@ public class FocusActivity extends AppCompatActivity {
     private static final int NOTIF_ID = 1;
     private CountDownTimer focusCountDownTimer, restCountDownTimer;
     private long focusMillisLeft, restMillisLeft;
-    private static boolean isFocusRunning = false;
     private CardView
             focusCardView,
             restCardView,
@@ -65,7 +64,8 @@ public class FocusActivity extends AppCompatActivity {
             focusState;
     private LinearLayout
             depthLinearLayout;
-    TimerPreferences timerPrefs;
+    private final String FINISHED="FINISHED", STARTED="STARTED";
+    private TimerPreferences timerPrefs;
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -110,44 +110,50 @@ public class FocusActivity extends AppCompatActivity {
         syncFocusUiWithPrefs();
     }
     private void syncFocusUiWithPrefs() {
+        int max = timerPrefs.getMax();
+        long left = timerPrefs.getMillisLeft();
         if (timerPrefs.isFocusActive()) {
             focusCardView.setVisibility(View.VISIBLE);
             depthLinearLayout.setVisibility(View.GONE);
             contextDepth.setVisibility(View.GONE);
             focusButton.setVisibility(View.GONE);
-            long left = timerPrefs.getMillisLeft();
+            focusTimeRemaining.setVisibility(View.VISIBLE);
             focusTimeRemaining.setText(timeConvert((int) (left / 1000)));
-            focusState.setText("STARTED");
-
+            focusState.setText(STARTED);
+            focusCircularProgress.setMax(max);
             focusCountDownTimer = new CountDownTimer(left, 1000) {
                 @Override public void onTick(long millisUntilFinished) {
                     focusTimeRemaining.setText(timeConvert((int) (millisUntilFinished / 1000)));
+                    focusCircularProgress.setProgress((int)(max-millisUntilFinished));
                 }
                 @Override public void onFinish() {
                     timerPrefs.stop();
                     focusMillisLeft = 0;
-                    focusState.setText("DONE");
+                    focusState.setText(FINISHED);
                     sendNotification("Focus complete", "Time for a rest.");
 
                     focusCardView.setVisibility(View.GONE);
                     restCardView.setVisibility(View.VISIBLE);
+                    restTimeRemaining.setText(timeConvert(restSeconds));
                 }
             }.start();
         }else if(timerPrefs.isRestActive()){
+            focusCardView.setVisibility(View.GONE);
             restCardView.setVisibility(View.VISIBLE);
             restButton.setVisibility(View.GONE);
-            long left = timerPrefs.getMillisLeft();
-            focusTimeRemaining.setText(timeConvert((int) (left / 1000)));
-            focusState.setText("STARTED");
-
-            focusCountDownTimer = new CountDownTimer(left, 1000) {
+            restTimeRemaining.setVisibility(View.VISIBLE);
+            restTimeRemaining.setText(timeConvert((int) (left / 1000)));
+            restState.setText(STARTED);
+            restCircularProgress.setMax(max);
+            restCountDownTimer = new CountDownTimer(left, 1000) {
                 @Override public void onTick(long millisUntilFinished) {
-                    focusTimeRemaining.setText(timeConvert((int) (millisUntilFinished / 1000)));
+                    restTimeRemaining.setText(timeConvert((int) (millisUntilFinished / 1000)));
+                    focusCircularProgress.setProgress((int)(max-millisUntilFinished));
                 }
                 @Override public void onFinish() {
                     timerPrefs.stop();
-                    focusMillisLeft = 0;
-                    focusState.setText("DONE");
+                    restMillisLeft = 0;
+                    restState.setText(FINISHED);
                     sendNotification("Rest complete", "Back to focus when ready.");
                     initialize();
                 }
@@ -160,6 +166,7 @@ public class FocusActivity extends AppCompatActivity {
         restCardView.setVisibility(View.GONE);
         focusButton.setVisibility(View.GONE);
         restButton.setVisibility(View.VISIBLE);
+        focusTimeRemaining.setVisibility(View.GONE);
 
         focusCircularProgress.setProgress(0);
         restCircularProgress.setProgress(0);
@@ -175,6 +182,7 @@ public class FocusActivity extends AppCompatActivity {
         contextDepth.setText(depth);
     }
     private void buttonSelected(TextView textView, boolean isSelected){
+
         if(isSelected){
             textView.setBackgroundColor(Color.parseColor("#3B82F6"));
             textView.setTextColor(Color.parseColor("#000000"));
@@ -221,6 +229,7 @@ public class FocusActivity extends AppCompatActivity {
                 buttonSelected(deepText,true);
                 break;
         }
+        focusTimeRemaining.setVisibility(View.VISIBLE);
         focusButton.setVisibility(View.VISIBLE);
     }
     private String timeConvert(int totalSeconds){
@@ -239,7 +248,7 @@ public class FocusActivity extends AppCompatActivity {
         focusButton.setVisibility(View.GONE);
         if (focusMillisLeft <= 0) {
             focusMillisLeft = focusSeconds * 1000L;
-            timerPrefs.start("FOCUS", focusSeconds * 1000L);
+            timerPrefs.start("FOCUS", focusSeconds * 1000L,focusSeconds*1000);
             focusCircularProgress.setMax(focusSeconds * 1000);
         }
 
@@ -255,23 +264,22 @@ public class FocusActivity extends AppCompatActivity {
             public void onFinish() {
                 timerPrefs.stop();
                 focusMillisLeft = 0;
-                focusState.setText("DONE");
-                sendNotification("Focus complete", "Time for a rest.");
+                focusState.setText(FINISHED);
 
+                sendNotification("Focus complete", "Time for a rest.");
                 focusCardView.setVisibility(View.GONE);
                 restCardView.setVisibility(View.VISIBLE);
             }
         }.start();
 
-        isFocusRunning = true;
-        focusState.setText("STARTED");
+        focusState.setText(STARTED);
     }
     private void restButton(){
         restButton.setVisibility(View.GONE);
 
         if (restMillisLeft <= 0) {
             restMillisLeft = restSeconds * 1000L;
-            timerPrefs.start("REST", restSeconds * 1000L);
+            timerPrefs.start("REST", restSeconds * 1000L,restSeconds*1000);
             restCircularProgress.setMax(restSeconds * 1000);
         }
 
@@ -280,19 +288,20 @@ public class FocusActivity extends AppCompatActivity {
             public void onTick(long millisUntilFinished) {
                 restMillisLeft = millisUntilFinished;
                 restCircularProgress.setProgress((int) (restSeconds * 1000L - millisUntilFinished));
+                restTimeRemaining.setText(timeConvert((int) (millisUntilFinished / 1000)));
             }
 
             @Override
             public void onFinish() {
                 timerPrefs.stop();
                 restMillisLeft = 0;
-                restState.setText("DONE");
+                restState.setText(FINISHED);
                 sendNotification("Rest complete", "Back to focus when ready.");
                 initialize();
             }
         }.start();
 
-        restState.setText("STARTED");
+        restState.setText(STARTED);
     }
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -319,22 +328,6 @@ public class FocusActivity extends AppCompatActivity {
         NotificationManagerCompat.from(this).notify(NOTIF_ID, builder.build());
     }
 
-    private void sendTimeUpNotification() {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.vector_logo_icon)
-                .setContentTitle("Time's up!")
-                .setContentText("Your timer has finished.")
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setAutoCancel(true);
-
-        NotificationManagerCompat nmCompat = NotificationManagerCompat.from(this);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED
-                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            return;
-        }
-        nmCompat.notify(NOTIF_ID, builder.build());
-    }
 
     private void requestNotificationPermissionIfNeeded() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

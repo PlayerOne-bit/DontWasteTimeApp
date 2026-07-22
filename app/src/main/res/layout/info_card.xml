@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/info_card"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:cardBackgroundColor="#141414"
+    app:cardCornerRadius="10dp">
+
+        <LinearLayout
+            android:padding="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:textSize="25sp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ABOUT"
+                android:textColor="#3B82F6"
+                android:textAlignment="center"
+                />
+            <TextView
+                android:textSize="20sp"
+                android:layout_marginTop="30dp"
+                android:textAlignment="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Wakai One"
+                android:textColor="@color/white"/>
+            <TextView
+                android:textAlignment="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Full Stack Developer"
+                android:textColor="#AAAAAA"/>
+            <TextView
+                android:textSize="18sp"
+                android:layout_marginTop="30dp"
+                android:textAlignment="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="https://github.com/PlayerOne-bit"
+                android:textColor="@color/white"/>
+            <TextView
+                android:textAlignment="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="GitHub"
+                android:textColor="#AAAAAA"/>
+
+            <TextView
+                android:id="@+id/info_close_button"
+                android:textAlignment="center"
+                android:layout_marginTop="50dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="CLOSE"
+                android:textColor="@color/black"
+                android:padding="10dp"
+                android:background="#D9181B"
+                />
+        </LinearLayout>
+</androidx.cardview.widget.CardView>

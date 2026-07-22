@@ -5,11 +5,11 @@ import android.content.SharedPreferences;
 
 public class TimerPreferences {
     private static final String PREFS_NAME = "timer_prefs";
-    private static final String KEY_PHASE = "phase";               // "NONE", "FOCUS", "REST"
+    private static final String KEY_PHASE = "phase";
     private static final String KEY_IS_RUNNING = "is_running";
-    private static final String KEY_END_TIME = "end_time_millis";   // valid only while running
-    private static final String KEY_REMAINING = "remaining_millis"; // valid only while paused
-
+    private static final String KEY_END_TIME = "end_time_millis";
+    private static final String KEY_REMAINING = "remaining_millis";
+    private static final String MAX_TIME = "max_time";
     private final SharedPreferences prefs;
 
     public TimerPreferences(Context context) {
@@ -17,34 +17,23 @@ public class TimerPreferences {
                 .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
     }
 
-    public void start(String phase, long durationMillis) {
+    public void start(String phase, long durationMillis, int maxTime) {
         long endTime = System.currentTimeMillis() + durationMillis;
         prefs.edit()
                 .putString(KEY_PHASE, phase)
+                .putInt(MAX_TIME, maxTime)
                 .putLong(KEY_END_TIME, endTime)
                 .putBoolean(KEY_IS_RUNNING, true)
                 .apply();
     }
 
-    public void pause() {
-        prefs.edit()
-                .putLong(KEY_REMAINING, getMillisLeft())
-                .putBoolean(KEY_IS_RUNNING, false)
-                .apply();
-    }
 
-    public void resume() {
-        long remaining = prefs.getLong(KEY_REMAINING, 0);
-        prefs.edit()
-                .putLong(KEY_END_TIME, System.currentTimeMillis() + remaining)
-                .putBoolean(KEY_IS_RUNNING, true)
-                .apply();
-    }
 
     public void stop() {
         prefs.edit()
                 .putString(KEY_PHASE, "NONE")
                 .putBoolean(KEY_IS_RUNNING, false)
+                .remove(MAX_TIME)
                 .remove(KEY_END_TIME)
                 .remove(KEY_REMAINING)
                 .apply();
@@ -63,8 +52,10 @@ public class TimerPreferences {
         long endTime = prefs.getLong(KEY_END_TIME, 0);
         return Math.max(0, endTime - System.currentTimeMillis());
     }
+    public int getMax(){
+        return prefs.getInt(MAX_TIME,0);
+    }
 
-    /** True only if the FOCUS phase is currently active and hasn't expired. */
     public boolean isFocusActive() {
         return isRunning() && "FOCUS".equals(getPhase()) && getMillisLeft() > 0;
     }

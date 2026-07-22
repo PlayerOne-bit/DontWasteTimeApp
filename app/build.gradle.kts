@@ -7,7 +7,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "app.dontwastetimeapp"
+        applicationId = "com.dontwastetimeapp"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
