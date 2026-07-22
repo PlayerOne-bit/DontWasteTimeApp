@@ -141,6 +141,9 @@ public class AppActivity extends AppCompatActivity {
     }
 
     private void displayAllApps(List<AppInfo> apps){
+        TextView numAppsText = findViewById(R.id.numAppsText);
+        String numberOfApps =allSavedApps.size()+" apps - tap to configure";
+        numAppsText.setText(numberOfApps);
         LinearLayout savedAppsContainer = findViewById(R.id.savedAppsContainer);
         savedAppsContainer.removeAllViews();
         for(AppInfo app: apps) {

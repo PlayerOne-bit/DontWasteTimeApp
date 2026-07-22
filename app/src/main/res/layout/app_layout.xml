@@ -33,9 +33,10 @@
                 android:textSize="30sp" />
 
             <TextView
+                android:id="@+id/numAppsText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="X apps - tap to configure" />
+                android:text="0 apps - tap to configure" />
         </LinearLayout>
 
         <Space
