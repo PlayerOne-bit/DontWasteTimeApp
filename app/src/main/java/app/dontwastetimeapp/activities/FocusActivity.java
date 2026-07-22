@@ -273,7 +273,7 @@ public class FocusActivity extends AppCompatActivity {
     }
     private void sendNotification(String title, String message) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.drawable.vector_logo_icon)
                 .setContentTitle(title)
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -289,7 +289,7 @@ public class FocusActivity extends AppCompatActivity {
 
     private void sendTimeUpNotification() {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_launcher_foreground) // swap for your own icon
+                .setSmallIcon(R.drawable.vector_logo_icon)
                 .setContentTitle("Time's up!")
                 .setContentText("Your timer has finished.")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -299,7 +299,7 @@ public class FocusActivity extends AppCompatActivity {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                 != PackageManager.PERMISSION_GRANTED
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            return; // permission not granted, skip (should already be requested in onCreate)
+            return;
         }
         nmCompat.notify(NOTIF_ID, builder.build());
     }

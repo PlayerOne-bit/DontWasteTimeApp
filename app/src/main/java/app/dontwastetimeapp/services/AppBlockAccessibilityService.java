@@ -40,8 +40,8 @@ public class AppBlockAccessibilityService extends AccessibilityService {
             for (AppInfo app : apps) {
                 boolean isRestricted = app.isBlocked() || app.isTimeOut();
                 if (app.getPackageName().equals(foregroundPackage)
-                        && isRestricted
-                        && timerPrefs.isFocusActive()) {
+                        && (isRestricted
+                        || timerPrefs.isFocusActive())) {
                     Log.d(TAG, "MATCH - redirecting home");
                     goHomeAndWarn();
                     return;
