@@ -247,15 +247,17 @@
                 android:orientation="horizontal">
 
                 <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
                     app:srcCompat="@drawable/notification_icon" />
 
                 <TextView
+                    android:textColor="@color/white"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="How it works"
-                    android:textSize="20sp" />
+                    android:textSize="25sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -264,11 +266,14 @@
                 android:orientation="horizontal">
 
                 <ImageView
+                    android:layout_gravity="center"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:srcCompat="@drawable/check_icon" />
 
                 <TextView
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="10dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="List down apps to set their daily time usage" />
@@ -280,11 +285,14 @@
                 android:orientation="horizontal">
 
                 <ImageView
+                    android:layout_gravity="center"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:srcCompat="@drawable/check_icon" />
 
                 <TextView
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="10dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Manually toggle any app off to block it instantly." />
@@ -296,11 +304,14 @@
                 android:orientation="horizontal">
 
                 <ImageView
+                    android:layout_gravity="center"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:srcCompat="@drawable/check_icon" />
 
                 <TextView
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="10dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="You can't remove or edit apps on timeouts." />
@@ -311,11 +322,14 @@
                 android:orientation="horizontal">
 
                 <ImageView
+                    android:layout_gravity="center"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:srcCompat="@drawable/check_icon" />
 
                 <TextView
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="10dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="The daily reset for timeouts is at 5 AM." />
@@ -332,6 +346,8 @@
                     app:srcCompat="@drawable/check_icon" />
 
                 <TextView
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="10dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Try the ultra focus mode to block apps with a timer" />
