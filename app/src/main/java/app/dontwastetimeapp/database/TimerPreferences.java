@@ -68,4 +68,7 @@ public class TimerPreferences {
     public boolean isFocusActive() {
         return isRunning() && "FOCUS".equals(getPhase()) && getMillisLeft() > 0;
     }
+    public boolean isRestActive(){
+        return isRunning() && "REST".equalsIgnoreCase(getPhase()) && getMillisLeft()>0;
+    }
 }

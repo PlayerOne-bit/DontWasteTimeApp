@@ -60,6 +60,7 @@ public class FocusActivity extends AppCompatActivity {
             deepText,
             contextDepth,
             focusTimeRemaining,
+            restTimeRemaining,
             restState,
             focusState;
     private LinearLayout
@@ -96,6 +97,7 @@ public class FocusActivity extends AppCompatActivity {
         deepText = findViewById(R.id.deepText);
         contextDepth = findViewById(R.id.contextDepth);
         focusTimeRemaining = findViewById(R.id.focusTimeRemaining);
+        restTimeRemaining = findViewById(R.id.restTimeRemaining);
         restState = findViewById(R.id.restState);
         focusState = findViewById(R.id.focusState);
 
@@ -109,17 +111,45 @@ public class FocusActivity extends AppCompatActivity {
     }
     private void syncFocusUiWithPrefs() {
         if (timerPrefs.isFocusActive()) {
+            focusCardView.setVisibility(View.VISIBLE);
+            depthLinearLayout.setVisibility(View.GONE);
+            contextDepth.setVisibility(View.GONE);
+            focusButton.setVisibility(View.GONE);
             long left = timerPrefs.getMillisLeft();
             focusTimeRemaining.setText(timeConvert((int) (left / 1000)));
             focusState.setText("STARTED");
-            // restart the visible CountDownTimer from the real remaining time
+
             focusCountDownTimer = new CountDownTimer(left, 1000) {
                 @Override public void onTick(long millisUntilFinished) {
                     focusTimeRemaining.setText(timeConvert((int) (millisUntilFinished / 1000)));
                 }
                 @Override public void onFinish() {
                     timerPrefs.stop();
+                    focusMillisLeft = 0;
                     focusState.setText("DONE");
+                    sendNotification("Focus complete", "Time for a rest.");
+
+                    focusCardView.setVisibility(View.GONE);
+                    restCardView.setVisibility(View.VISIBLE);
+                }
+            }.start();
+        }else if(timerPrefs.isRestActive()){
+            restCardView.setVisibility(View.VISIBLE);
+            restButton.setVisibility(View.GONE);
+            long left = timerPrefs.getMillisLeft();
+            focusTimeRemaining.setText(timeConvert((int) (left / 1000)));
+            focusState.setText("STARTED");
+
+            focusCountDownTimer = new CountDownTimer(left, 1000) {
+                @Override public void onTick(long millisUntilFinished) {
+                    focusTimeRemaining.setText(timeConvert((int) (millisUntilFinished / 1000)));
+                }
+                @Override public void onFinish() {
+                    timerPrefs.stop();
+                    focusMillisLeft = 0;
+                    focusState.setText("DONE");
+                    sendNotification("Rest complete", "Back to focus when ready.");
+                    initialize();
                 }
             }.start();
         }
@@ -241,6 +271,7 @@ public class FocusActivity extends AppCompatActivity {
 
         if (restMillisLeft <= 0) {
             restMillisLeft = restSeconds * 1000L;
+            timerPrefs.start("REST", restSeconds * 1000L);
             restCircularProgress.setMax(restSeconds * 1000);
         }
 
@@ -253,6 +284,7 @@ public class FocusActivity extends AppCompatActivity {
 
             @Override
             public void onFinish() {
+                timerPrefs.stop();
                 restMillisLeft = 0;
                 restState.setText("DONE");
                 sendNotification("Rest complete", "Back to focus when ready.");
