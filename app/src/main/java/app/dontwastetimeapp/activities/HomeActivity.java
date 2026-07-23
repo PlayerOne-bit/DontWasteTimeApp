@@ -23,7 +23,6 @@ import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
 import androidx.core.graphics.Insets;
 import androidx.core.splashscreen.SplashScreen;
 import androidx.core.splashscreen.SplashScreenViewProvider;
@@ -172,7 +171,7 @@ public class HomeActivity extends AppCompatActivity {
             text="BLOCKED";
             bar.setProgress(bar.getMax());
             bar.setProgressTintList(ColorStateList.valueOf(colors[0]));
-        }else if (app.isTimeOut()){
+        }else if (app.isTimeOut() || app.isOverLimit()){
             text="TIME OUT";
             bar.setProgress(bar.getMax());
             bar.setProgressTintList(ColorStateList.valueOf(colors[1]));
@@ -239,7 +238,7 @@ public class HomeActivity extends AppCompatActivity {
     }
     private void requestAccessibilityPermission() {
         if (!isAccessibilityServiceEnabled()) {
-            Toast.makeText(this, "Please enable Don't Waste Time in Accessibility settings", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Please enable Odysseus Focus in Accessibility settings", Toast.LENGTH_LONG).show();
             Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
             startActivity(intent);
         }
@@ -293,8 +292,15 @@ public class HomeActivity extends AppCompatActivity {
     }
     private void scheduleDailyReset() {
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-
         Intent intent = new Intent(this, DailyResetReceiver.class);
+
+        PendingIntent existing = PendingIntent.getBroadcast(
+                this, 0, intent,
+                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_NO_CREATE);
+        if (existing != null) {
+            return;
+        }
+
         PendingIntent pendingIntent = PendingIntent.getBroadcast(
                 this, 0, intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -309,15 +315,9 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
-            alarmManager.setAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
             return;
         }
-
-        alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                calendar.getTimeInMillis(),
-                pendingIntent
-        );
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
     }
 }

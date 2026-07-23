@@ -28,7 +28,6 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 import java.util.List;
@@ -43,31 +42,19 @@ public class FocusActivity extends AppCompatActivity {
     private int restSeconds;
     private static final String CHANNEL_ID = "timer_channel";
     private static final int NOTIF_ID = 1;
+    private static final String FOCUS = "FOCUS", REST = "REST";
     private CountDownTimer focusCountDownTimer, restCountDownTimer;
     private long focusMillisLeft, restMillisLeft;
-    private CardView
-            focusCardView,
-            restCardView,
-            focusButton,
-            restButton;
-    private CircularProgressIndicator
-            focusCircularProgress,
-            restCircularProgress;
-    private TextView
-            lightText,
-            steadyText,
-            deepText,
-            contextDepth,
-            focusTimeRemaining,
-            restTimeRemaining,
-            restState,
-            focusState;
-    private LinearLayout
-            depthLinearLayout;
-    private final String FINISHED="FINISHED", STARTED="STARTED";
+    private CardView focusCardView, restCardView, focusButton, restButton;
+    private CircularProgressIndicator focusCircularProgress, restCircularProgress;
+    private TextView lightText, steadyText, deepText, contextDepth,
+            focusTimeRemaining, restTimeRemaining, restState, focusState;
+    private LinearLayout depthLinearLayout;
+    private final String FINISHED = "FINISHED", STARTED = "STARTED";
     private TimerPreferences timerPrefs;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState){
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         timerPrefs = new TimerPreferences(this);
         EdgeToEdge.enable(this);
@@ -83,15 +70,14 @@ public class FocusActivity extends AppCompatActivity {
         setUpNavigation();
         initialize();
     }
-    private void setUpIDs(){
+
+    private void setUpIDs() {
         focusCardView = findViewById(R.id.focusCardView);
         restCardView = findViewById(R.id.restCardView);
         focusButton = findViewById(R.id.focusButton);
         restButton = findViewById(R.id.restButton);
-
         focusCircularProgress = findViewById(R.id.focusCircularProgress);
         restCircularProgress = findViewById(R.id.restCircularProgress);
-
         lightText = findViewById(R.id.lightText);
         steadyText = findViewById(R.id.steadyText);
         deepText = findViewById(R.id.deepText);
@@ -100,67 +86,95 @@ public class FocusActivity extends AppCompatActivity {
         restTimeRemaining = findViewById(R.id.restTimeRemaining);
         restState = findViewById(R.id.restState);
         focusState = findViewById(R.id.focusState);
-
         depthLinearLayout = findViewById(R.id.depthLinearLayout);
     }
+
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
         loadAllApps();
         syncFocusUiWithPrefs();
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        cancelTimers();
+    }
+
+    private void cancelTimers() {
+        if (focusCountDownTimer != null) { focusCountDownTimer.cancel(); focusCountDownTimer = null; }
+        if (restCountDownTimer != null) { restCountDownTimer.cancel(); restCountDownTimer = null; }
+    }
+
+
+    private CountDownTimer startPhaseTimer(long millisLeft, int max, TextView timeLabel,
+                                           CircularProgressIndicator progress, Runnable onFinish) {
+        progress.setMax(max);
+        return new CountDownTimer(millisLeft, 1000) {
+            @Override public void onTick(long millisUntilFinished) {
+                timeLabel.setText(timeConvert((int) (millisUntilFinished / 1000)));
+                progress.setProgress((int) (max - millisUntilFinished));
+            }
+            @Override public void onFinish() {
+                onFinish.run();
+            }
+        }.start();
+    }
+
+    private void showFocusActive() {
+        focusCardView.setVisibility(View.VISIBLE);
+        depthLinearLayout.setVisibility(View.GONE);
+        contextDepth.setVisibility(View.GONE);
+        focusButton.setVisibility(View.GONE);
+        focusTimeRemaining.setVisibility(View.VISIBLE);
+        focusState.setText(STARTED);
+    }
+
+    private void showRestActive() {
+        focusCardView.setVisibility(View.GONE);
+        restCardView.setVisibility(View.VISIBLE);
+        restButton.setVisibility(View.GONE);
+        restTimeRemaining.setVisibility(View.VISIBLE);
+        restState.setText(STARTED);
+    }
+
+    private void onFocusFinished() {
+        timerPrefs.stop();
+        focusMillisLeft = 0;
+        focusState.setText(FINISHED);
+        sendNotification("Focus complete", "Time for a rest.");
+        focusCardView.setVisibility(View.GONE);
+        restCardView.setVisibility(View.VISIBLE);
+        restTimeRemaining.setText(timeConvert(restSeconds));
+    }
+
+    private void onRestFinished() {
+        timerPrefs.stop();
+        restMillisLeft = 0;
+        restState.setText(FINISHED);
+        sendNotification("Rest complete", "Back to focus when ready.");
+        initialize();
+    }
+
     private void syncFocusUiWithPrefs() {
         int max = timerPrefs.getMax();
         long left = timerPrefs.getMillisLeft();
-        if (timerPrefs.isFocusActive()) {
-            focusCardView.setVisibility(View.VISIBLE);
-            depthLinearLayout.setVisibility(View.GONE);
-            contextDepth.setVisibility(View.GONE);
-            focusButton.setVisibility(View.GONE);
-            focusTimeRemaining.setVisibility(View.VISIBLE);
-            focusTimeRemaining.setText(timeConvert((int) (left / 1000)));
-            focusState.setText(STARTED);
-            focusCircularProgress.setMax(max);
-            focusCountDownTimer = new CountDownTimer(left, 1000) {
-                @Override public void onTick(long millisUntilFinished) {
-                    focusTimeRemaining.setText(timeConvert((int) (millisUntilFinished / 1000)));
-                    focusCircularProgress.setProgress((int)(max-millisUntilFinished));
-                }
-                @Override public void onFinish() {
-                    timerPrefs.stop();
-                    focusMillisLeft = 0;
-                    focusState.setText(FINISHED);
-                    sendNotification("Focus complete", "Time for a rest.");
 
-                    focusCardView.setVisibility(View.GONE);
-                    restCardView.setVisibility(View.VISIBLE);
-                    restTimeRemaining.setText(timeConvert(restSeconds));
-                }
-            }.start();
-        }else if(timerPrefs.isRestActive()){
-            focusCardView.setVisibility(View.GONE);
-            restCardView.setVisibility(View.VISIBLE);
-            restButton.setVisibility(View.GONE);
-            restTimeRemaining.setVisibility(View.VISIBLE);
+        if (timerPrefs.isFocusActive()) {
+            focusMillisLeft = left;
+            showFocusActive();
+            focusTimeRemaining.setText(timeConvert((int) (left / 1000)));
+            focusCountDownTimer = startPhaseTimer(left, max, focusTimeRemaining, focusCircularProgress, this::onFocusFinished);
+        } else if (timerPrefs.isRestActive()) {
+            restMillisLeft = left;
+            showRestActive();
             restTimeRemaining.setText(timeConvert((int) (left / 1000)));
-            restState.setText(STARTED);
-            restCircularProgress.setMax(max);
-            restCountDownTimer = new CountDownTimer(left, 1000) {
-                @Override public void onTick(long millisUntilFinished) {
-                    restTimeRemaining.setText(timeConvert((int) (millisUntilFinished / 1000)));
-                    focusCircularProgress.setProgress((int)(max-millisUntilFinished));
-                }
-                @Override public void onFinish() {
-                    timerPrefs.stop();
-                    restMillisLeft = 0;
-                    restState.setText(FINISHED);
-                    sendNotification("Rest complete", "Back to focus when ready.");
-                    initialize();
-                }
-            }.start();
+            restCountDownTimer = startPhaseTimer(left, max, restTimeRemaining, restCircularProgress, this::onRestFinished);
         }
     }
-    private void initialize(){
+
+    private void initialize() {
         depthLinearLayout.setVisibility(View.VISIBLE);
         focusCardView.setVisibility(View.VISIBLE);
         restCardView.setVisibility(View.GONE);
@@ -175,134 +189,91 @@ public class FocusActivity extends AppCompatActivity {
         focusState.setText(initialState);
         restState.setText(initialState);
 
-        buttonSelected(lightText,false);
-        buttonSelected(steadyText,false);
-        buttonSelected(deepText,false);
-        String depth = "DEPTH";
-        contextDepth.setText(depth);
+        buttonSelected(lightText, false);
+        buttonSelected(steadyText, false);
+        buttonSelected(deepText, false);
+        contextDepth.setText("DEPTH");
     }
-    private void buttonSelected(TextView textView, boolean isSelected){
 
-        if(isSelected){
-            textView.setBackgroundColor(Color.parseColor("#3B82F6"));
-            textView.setTextColor(Color.parseColor("#000000"));
-        }else{
-            textView.setBackgroundColor(Color.parseColor("#1F1F1F"));
-            textView.setTextColor(Color.parseColor("#FFFFFF"));
-        }
+    private void buttonSelected(TextView textView, boolean isSelected) {
+        textView.setBackgroundColor(Color.parseColor(isSelected ? "#3B82F6" : "#1F1F1F"));
+        textView.setTextColor(Color.parseColor(isSelected ? "#000000" : "#FFFFFF"));
     }
-    private void setDepth(String depth){
-        String time;
-        String context;
-        switch(depth){
+
+    private void setDepth(String depth) {
+        String time, context;
+        switch (depth) {
             case "LIGHT":
                 context = "30 minutes - FOCUS : 5 minutes - REST";
                 time = "30m";
-                focusSeconds=30*60;
-                restSeconds=5*60;
-                contextDepth.setText(context);
-                focusTimeRemaining.setText(time);
-                buttonSelected(lightText,true);
-                buttonSelected(steadyText,false);
-                buttonSelected(deepText,false);
+                focusSeconds = 30 * 60;
+                restSeconds = 5 * 60;
+                buttonSelected(lightText, true);
+                buttonSelected(steadyText, false);
+                buttonSelected(deepText, false);
                 break;
             case "STEADY":
                 context = "1 hour - FOCUS : 10 minutes - REST";
                 time = "1h";
-                focusSeconds=60*60;
-                restSeconds=10*60;
-                contextDepth.setText(context);
-                focusTimeRemaining.setText(time);
-                buttonSelected(lightText,false);
-                buttonSelected(steadyText,true);
-                buttonSelected(deepText,false);
+                focusSeconds = 60 * 60;
+                restSeconds = 10 * 60;
+                buttonSelected(lightText, false);
+                buttonSelected(steadyText, true);
+                buttonSelected(deepText, false);
                 break;
             case "DEEP":
                 context = "2 hour - FOCUS : 20 minutes - REST";
                 time = "2h";
-                focusSeconds=120*60;
-                restSeconds=20*60;
-                contextDepth.setText(context);
-                focusTimeRemaining.setText(time);
-                buttonSelected(lightText,false);
-                buttonSelected(steadyText,false);
-                buttonSelected(deepText,true);
+                focusSeconds = 120 * 60;
+                restSeconds = 20 * 60;
+                buttonSelected(lightText, false);
+                buttonSelected(steadyText, false);
+                buttonSelected(deepText, true);
                 break;
+            default:
+                return;
         }
+        contextDepth.setText(context);
+        focusTimeRemaining.setText(time);
         focusTimeRemaining.setVisibility(View.VISIBLE);
         focusButton.setVisibility(View.VISIBLE);
     }
-    private String timeConvert(int totalSeconds){
-        int totalMinutes= totalSeconds/60,
-                minutes=totalMinutes%60,
-                hours= totalMinutes/60,
-                seconds = totalSeconds %60;
-        String hoursText=(hours>0)?hours+"h ":"",
-                minutesText=(minutes>0)?minutes+"m ":"",
-                secondsText=(seconds>0)?seconds+"s":"";
-        return (hoursText+minutesText+secondsText).trim();
+
+    private String timeConvert(int totalSeconds) {
+        int totalMinutes = totalSeconds / 60,
+                minutes = totalMinutes % 60,
+                hours = totalMinutes / 60,
+                seconds = totalSeconds % 60;
+        String hoursText = (hours > 0) ? hours + "h " : "",
+                minutesText = (minutes > 0) ? minutes + "m " : "",
+                secondsText = (seconds > 0) ? seconds + "s" : "";
+        return (hoursText + minutesText + secondsText).trim();
     }
-    private void focusButton(){
-        depthLinearLayout.setVisibility(View.GONE);
-        contextDepth.setVisibility(View.GONE);
-        focusButton.setVisibility(View.GONE);
+
+    private void focusButton() {
+        cancelTimers();
+        showFocusActive();
+
         if (focusMillisLeft <= 0) {
             focusMillisLeft = focusSeconds * 1000L;
-            timerPrefs.start("FOCUS", focusSeconds * 1000L,focusSeconds*1000);
-            focusCircularProgress.setMax(focusSeconds * 1000);
+            timerPrefs.start(FOCUS, focusMillisLeft, focusSeconds * 1000);
         }
-
-        focusCountDownTimer = new CountDownTimer(focusMillisLeft, 1000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                focusMillisLeft = millisUntilFinished;
-                focusTimeRemaining.setText(timeConvert((int) (millisUntilFinished / 1000)));
-                focusCircularProgress.setProgress((int) (focusSeconds * 1000L - millisUntilFinished));
-            }
-
-            @Override
-            public void onFinish() {
-                timerPrefs.stop();
-                focusMillisLeft = 0;
-                focusState.setText(FINISHED);
-
-                sendNotification("Focus complete", "Time for a rest.");
-                focusCardView.setVisibility(View.GONE);
-                restCardView.setVisibility(View.VISIBLE);
-            }
-        }.start();
-
-        focusState.setText(STARTED);
+        focusCountDownTimer = startPhaseTimer(focusMillisLeft, focusSeconds * 1000,
+                focusTimeRemaining, focusCircularProgress, this::onFocusFinished);
     }
-    private void restButton(){
-        restButton.setVisibility(View.GONE);
+
+    private void restButton() {
+        cancelTimers();
+        showRestActive();
 
         if (restMillisLeft <= 0) {
             restMillisLeft = restSeconds * 1000L;
-            timerPrefs.start("REST", restSeconds * 1000L,restSeconds*1000);
-            restCircularProgress.setMax(restSeconds * 1000);
+            timerPrefs.start(REST, restMillisLeft, restSeconds * 1000);
         }
-
-        restCountDownTimer = new CountDownTimer(restMillisLeft, 1000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                restMillisLeft = millisUntilFinished;
-                restCircularProgress.setProgress((int) (restSeconds * 1000L - millisUntilFinished));
-                restTimeRemaining.setText(timeConvert((int) (millisUntilFinished / 1000)));
-            }
-
-            @Override
-            public void onFinish() {
-                timerPrefs.stop();
-                restMillisLeft = 0;
-                restState.setText(FINISHED);
-                sendNotification("Rest complete", "Back to focus when ready.");
-                initialize();
-            }
-        }.start();
-
-        restState.setText(STARTED);
+        restCountDownTimer = startPhaseTimer(restMillisLeft, restSeconds * 1000,
+                restTimeRemaining, restCircularProgress, this::onRestFinished);
     }
+
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
@@ -312,6 +283,7 @@ public class FocusActivity extends AppCompatActivity {
             nm.createNotificationChannel(channel);
         }
     }
+
     private void sendNotification(String title, String message) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.vector_logo_icon)
@@ -328,7 +300,6 @@ public class FocusActivity extends AppCompatActivity {
         NotificationManagerCompat.from(this).notify(NOTIF_ID, builder.build());
     }
 
-
     private void requestNotificationPermissionIfNeeded() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
@@ -342,53 +313,53 @@ public class FocusActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (focusCountDownTimer != null) focusCountDownTimer.cancel();
-        if (restCountDownTimer != null) restCountDownTimer.cancel();
+        cancelTimers();
     }
 
-    private void loadAllApps(){
-        try(AppPreferences db = new AppPreferences(this)){
+    private void loadAllApps() {
+        try (AppPreferences db = new AppPreferences(this)) {
             List<AppInfo> savedAllApps = db.getAllApps();
-            savedAllApps.sort((a, b)->a.getAppName().compareToIgnoreCase(b.getAppName()));
+            savedAllApps.sort((a, b) -> a.getAppName().compareToIgnoreCase(b.getAppName()));
             LinearLayout focusAppsContainer = findViewById(R.id.focusAppContainer);
             focusAppsContainer.removeAllViews();
-            for(AppInfo app: savedAllApps) {
+            PackageManager pm = getPackageManager();
+            for (AppInfo app : savedAllApps) {
                 View row = getLayoutInflater().inflate(R.layout.installed_app_card, focusAppsContainer, false);
                 ImageView appIcon = row.findViewById(R.id.installedAppIcon);
                 TextView appName = row.findViewById(R.id.installedAppName);
-                PackageManager pm = getPackageManager();
-                try {
-                    Drawable drawable = pm.getApplicationIcon(app.getPackageName());
-                    appIcon.setImageDrawable(drawable);
-                } catch (PackageManager.NameNotFoundException e) {
-                    appIcon.setImageResource(R.drawable.app_icon);
-                }
+                bindAppIcon(pm, appIcon, app.getPackageName());
                 appName.setText(app.getAppName());
                 focusAppsContainer.addView(row);
             }
         }
     }
 
-
-    private void setUpNavigation(){
-        LinearLayout navHome = findViewById(R.id.navHome),
-                    navApps = findViewById(R.id.navApps);
-        lightText.setOnClickListener(v->setDepth("LIGHT"));
-        steadyText.setOnClickListener(v->setDepth("STEADY"));
-        deepText.setOnClickListener(v->setDepth("DEEP"));
-
-        navHome.setOnClickListener(v->toNavigate(HomeActivity.class));
-        navApps.setOnClickListener(v->toNavigate(AppActivity.class));
-        focusButton.setOnClickListener(v->focusButton());
-        restButton.setOnClickListener(v->restButton());
-
-
+    private void bindAppIcon(PackageManager pm, ImageView icon, String packageName) {
+        try {
+            Drawable drawable = pm.getApplicationIcon(packageName);
+            icon.setImageDrawable(drawable);
+        } catch (PackageManager.NameNotFoundException e) {
+            icon.setImageResource(R.drawable.app_icon);
+        }
     }
-    private void toNavigate(Class<?> destination){
+
+    private void setUpNavigation() {
+        LinearLayout navHome = findViewById(R.id.navHome),
+                navApps = findViewById(R.id.navApps);
+        lightText.setOnClickListener(v -> setDepth("LIGHT"));
+        steadyText.setOnClickListener(v -> setDepth("STEADY"));
+        deepText.setOnClickListener(v -> setDepth("DEEP"));
+        navHome.setOnClickListener(v -> toNavigate(HomeActivity.class));
+        navApps.setOnClickListener(v -> toNavigate(AppActivity.class));
+        focusButton.setOnClickListener(v -> focusButton());
+        restButton.setOnClickListener(v -> restButton());
+    }
+
+    private void toNavigate(Class<?> destination) {
         Intent intent = new Intent(FocusActivity.this, destination);
         intent.addFlags(FLAG_ACTIVITY_CLEAR_TOP | FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(intent);
         finish();
-        overridePendingTransition(0,0);
+        overridePendingTransition(0, 0);
     }
 }

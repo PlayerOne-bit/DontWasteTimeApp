@@ -78,9 +78,10 @@ public class AddAppActivity extends AppCompatActivity {
         allInstalledApps = new ArrayList<>();
         for (ApplicationInfo appInfo : rawList) {
             boolean isSystemApp = (appInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
+            boolean isUpdatedSystemApp = (appInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0;
             boolean isSelf = appInfo.packageName.equals(myPackageName);
             boolean isAlreadySaved = savedPackageNames.contains(appInfo.packageName);
-            if (!isSystemApp && !isSelf && !isAlreadySaved) {
+            if ((isUpdatedSystemApp || !isSystemApp) && !isSelf && !isAlreadySaved) {
                 allInstalledApps.add(appInfo);
             }
         }
@@ -111,7 +112,7 @@ public class AddAppActivity extends AppCompatActivity {
         LinearLayout container = findViewById(R.id.installedAppsContainer);
         PackageManager pm = getPackageManager();
 
-        container.removeAllViews(); // clear whatever was there before re-drawing
+        container.removeAllViews();
 
         for (ApplicationInfo appInfo : apps) {
             View row = getLayoutInflater().inflate(R.layout.installed_app_card, container, false);

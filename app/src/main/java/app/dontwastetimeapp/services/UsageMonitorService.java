@@ -1,11 +1,10 @@
 package app.dontwastetimeapp.services;
 
-import android.app.AppOpsManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
-import android.app.usage.UsageStats;
+import android.app.usage.UsageEvents;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +12,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -28,7 +28,7 @@ public class UsageMonitorService extends Service {
 
     private static final String CHANNEL_ID = "usage_monitor_channel";
     private static final int NOTIFICATION_ID = 1;
-    private static final long CHECK_INTERVAL_MS = 60000; // 60 seconds
+    private static final long CHECK_INTERVAL_MS = 60000;
 
     private Handler handler;
     private Runnable checkRunnable;
@@ -75,11 +75,11 @@ public class UsageMonitorService extends Service {
             List<AppInfo> apps = db.getAllApps();
             for (AppInfo app : apps) {
                 int minutesUsed = getMinutesUsedToday(app.getPackageName());
+                Log.d("UsageMonitor", app.getPackageName() + " minutesUsed=" + minutesUsed
+                        + " limit=" + app.getDailyLimitMinutes());
                 app.setMinutesUsedToday(minutesUsed);
 
-                if (minutesUsed >= app.getDailyLimitMinutes() && app.getDailyLimitMinutes() > 0) {
-                    app.setTimeOut(true);
-                }
+                app.setTimeOut(minutesUsed >= app.getDailyLimitMinutes() && app.getDailyLimitMinutes() > 0);
 
                 db.editApp(app);
             }
@@ -88,27 +88,53 @@ public class UsageMonitorService extends Service {
 
     private int getMinutesUsedToday(String packageName) {
         UsageStatsManager usm = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        long startTime = calendar.getTimeInMillis();
+        long startTime = getLastResetBoundaryMillis();
         long endTime = System.currentTimeMillis();
 
-        List<UsageStats> statsList = usm.queryUsageStats(
-                UsageStatsManager.INTERVAL_DAILY, startTime, endTime);
-
+        UsageEvents usageEvents = usm.queryEvents(startTime, endTime);
         long totalForegroundMillis = 0;
-        if (statsList != null) {
-            for (UsageStats stats : statsList) {
-                if (stats.getPackageName().equals(packageName)) {
-                    totalForegroundMillis += stats.getTotalTimeInForeground();
+        long packageForegroundStart = -1;
+
+            String lastForegroundPackage = null;
+
+        UsageEvents.Event event = new UsageEvents.Event();
+        while (usageEvents.hasNextEvent()) {
+            usageEvents.getNextEvent(event);
+            String pkg = event.getPackageName();
+            int type = event.getEventType();
+
+            if (type == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                lastForegroundPackage = pkg;
+                if (pkg.equals(packageName)) {
+                    packageForegroundStart = event.getTimeStamp();
+                }
+            } else if (type == UsageEvents.Event.MOVE_TO_BACKGROUND) {
+                if (pkg.equals(packageName) && packageForegroundStart != -1) {
+                    totalForegroundMillis += event.getTimeStamp() - packageForegroundStart;
+                    packageForegroundStart = -1;
+                }
+                if (pkg.equals(lastForegroundPackage)) {
+                    lastForegroundPackage = null;
                 }
             }
         }
+        if (packageForegroundStart != -1 && packageName.equals(lastForegroundPackage)) {
+            totalForegroundMillis += endTime - packageForegroundStart;
+        }
 
         return (int) (totalForegroundMillis / 1000 / 60);
+    }
+
+    private long getLastResetBoundaryMillis() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 5);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        if (calendar.getTimeInMillis() > System.currentTimeMillis()) {
+            calendar.add(Calendar.DAY_OF_YEAR, -1);
+        }
+        return calendar.getTimeInMillis();
     }
 
     private void createNotificationChannel() {
@@ -125,7 +151,7 @@ public class UsageMonitorService extends Service {
 
     private Notification buildNotification() {
         return new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Don't Waste Time")
+                .setContentTitle("Don't Waste Your Time")
                 .setContentText("Monitoring your app usage")
                 .setSmallIcon(R.drawable.app_icon)
                 .setOngoing(true)

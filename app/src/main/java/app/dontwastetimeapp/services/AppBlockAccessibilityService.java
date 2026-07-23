@@ -32,7 +32,7 @@ public class AppBlockAccessibilityService extends AccessibilityService {
         String foregroundPackage = packageNameCharSeq.toString();
 
         if (foregroundPackage.equals(getPackageName())) {
-            return; // never redirect away from our own app
+            return;
         }
 
         try (AppPreferences db = new AppPreferences(this)) {
@@ -85,6 +85,6 @@ public class AppBlockAccessibilityService extends AccessibilityService {
 
     @Override
     public void onInterrupt() {
-        // required override, called if the system needs to stop this service abruptly - nothing to clean up here
+
     }
 }

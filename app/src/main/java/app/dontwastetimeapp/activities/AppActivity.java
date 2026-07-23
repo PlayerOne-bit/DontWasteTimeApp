@@ -4,8 +4,6 @@ import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
 import static android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP;
 
 import android.app.AppOpsManager;
-import android.app.usage.UsageStats;
-import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -63,9 +61,9 @@ public class AppActivity extends AppCompatActivity {
             requestUsageAccessPermission();
         }
         startUsageMonitorService();
-        refreshUsageStats();
         loadSavedApps();
     }
+
     private void startUsageMonitorService() {
         Intent serviceIntent = new Intent(this, UsageMonitorService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -90,45 +88,9 @@ public class AppActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private int getMinutesUsedToday(String packageName) {
-        UsageStatsManager usm = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
 
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        long startTime = calendar.getTimeInMillis();
-        long endTime = System.currentTimeMillis();
 
-        List<UsageStats> statsList = usm.queryUsageStats(
-                UsageStatsManager.INTERVAL_DAILY, startTime, endTime);
 
-        long totalForegroundMillis = 0;
-        if (statsList != null) {
-            for (UsageStats stats : statsList) {
-                if (stats.getPackageName().equals(packageName)) {
-                    totalForegroundMillis += stats.getTotalTimeInForeground();
-                }
-            }
-        }
-
-        return (int) (totalForegroundMillis / 1000 / 60);
-    }
-
-    private void refreshUsageStats() {
-        if (hasNoUsageAccessPermission()) {
-            return;
-        }
-
-        try (AppPreferences db = new AppPreferences(this)) {
-            List<AppInfo> apps = db.getAllApps();
-            for (AppInfo app : apps) {
-                int minutesUsed = getMinutesUsedToday(app.getPackageName());
-                app.setMinutesUsedToday(minutesUsed);
-                db.editApp(app);
-            }
-        }
-    }
     private void loadSavedApps(){
         try(AppPreferences db = new AppPreferences(this)){
             allSavedApps = db.getAllApps();
@@ -250,6 +212,7 @@ public class AppActivity extends AppCompatActivity {
     }
 
     private void toAddAppActivity(){
+            Toast.makeText(this, "Loading all apps. This may take a moment.", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(AppActivity.this, AddAppActivity.class);
         startActivity(intent);
     }
